@@ -1,0 +1,22 @@
+{"build": "Bryce 3D 3.0", "family": "3", "role": "program", "size": 2357760, "sha256": "7cceb0d75130a70a9783e43aab089bdb27bf9e060f9ea7f0a2ba02b7e399ebe7"}
+{"build": "Bryce 3D 3.0", "family": "3", "role": "maths", "size": 875520, "sha256": "a7b5cef57f55a0abe64dc0fd4f58ed63d892ed242ab5c44a44a42d2b8c5d1d38"}
+{"build": "Bryce 3D 3.0", "family": "3", "role": "menus", "install_path": "Data/dteditors.dat", "size": 860565, "sha256": "6bef07b968a01028031ad36b44087896bf5b7176da6e8bb366c673b11f88c60d"}
+{"build": "Bryce 3D 3.0", "family": "3", "role": "moon", "install_path": "Data/moonimage.dat", "size": 222360, "sha256": "8c61db0ea3df33c8e6fb5b4c507c0be1a7e32c137dfb10a31d4f6c1f4a4be98b"}
+{"build": "Bryce 3D 3.0", "family": "3", "role": "editor", "install_path": "Data/terraineditor.dat", "size": 694421, "sha256": "faca927a640350c0430f581ce067d8e92348efbc77c7abfc57e1972ab5a7ee29"}
+{"build": "Bryce 3D 3.1", "family": "3", "role": "program", "size": 2527744, "sha256": "66e0dbbfdc5bd8d0de0869724a636109cd3f8f39d8dc94690d5e8c4435265e6e"}
+{"build": "Bryce 3D 3.1", "family": "3", "role": "maths", "size": 873472, "sha256": "5051cf84a8d6cd829e48a521601b5c79675f2ca791d9a7683b8a20335d1a4de8"}
+{"build": "Bryce 3D 3.1", "family": "3", "role": "menus", "install_path": "Data/dteditors.dat", "size": 860565, "sha256": "6bef07b968a01028031ad36b44087896bf5b7176da6e8bb366c673b11f88c60d"}
+{"build": "Bryce 3D 3.1", "family": "3", "role": "moon", "install_path": "Data/moonimage.dat", "size": 2026499, "sha256": "157066503663a4196e0cf9a9771b5b5da98e95064ff65160e233db9f4cb20515"}
+{"build": "Bryce 3D 3.1", "family": "3", "role": "editor", "install_path": "Data/terraineditor.dat", "size": 694341, "sha256": "5244e4ee55754246fc8061b78a2a85017ba10a63aee9baacdca0cf1b40f15a85"}
+{"build": "Corel Bryce 5.0", "family": "5", "role": "program", "size": 4390912, "sha256": "93541ccbbfb9102b1930c551765cce0b461fd6c106c0f129ec79ac0731f60c3a"}
+{"build": "Corel Bryce 5.0", "family": "5", "role": "maths", "size": 987136, "sha256": "c5bfafdeedcbbd86630d393cca5551d57b6b97510f0f57baa63523cee08a8077"}
+{"build": "Corel Bryce 5.0", "family": "5", "role": "menus", "install_path": "data/dteditors.dat", "size": 853636, "sha256": "82271184726ae9d5e6b8fb775f97a3f5920e13656be9ff07c3cc345d0d4a9179"}
+{"build": "Corel Bryce 5.0", "family": "5", "role": "moon", "install_path": "data/moonimage.dat", "size": 65391, "sha256": "b04fedb078558ca150d4cfef9e4e88e166c6556d37d55fc8587f0b30184bc94f"}
+{"build": "Corel Bryce 5.0", "family": "5", "role": "stars", "install_path": "data/starcat.dat", "size": 808288, "sha256": "6c1255b89e8d88a7aa56f7d25ec7e59b2dbd1dd8ce097a97aef964e1e2421696"}
+{"build": "Corel Bryce 5.0", "family": "5", "role": "editor", "install_path": "data/terraineditor.dat", "size": 558897, "sha256": "cc4bb4bb181deede023765757263e3ab8cdf377b3d48127b53b1fb96b4d9fb50"}
+{"build": "DAZ Bryce 5 (2006)", "family": "5", "role": "program", "size": 4431872, "sha256": "8aaf4237ac8aff0af352c5a38d87de538c25ee3cb3d2fb52e28495343450ff44"}
+{"build": "DAZ Bryce 5 (2006)", "family": "5", "role": "maths", "size": 987136, "sha256": "e3a2b0187f1e0eab0ce81c00069b1649e4a232c413ca73295023daec3d2ce894"}
+{"build": "DAZ Bryce 5 (2006)", "family": "5", "role": "menus", "install_path": "data/dteditors.dat", "size": 853498, "sha256": "97e4383664eecadafa4fac14f5e7ceba0f4f6d7c5955503d525ba3396241621f"}
+{"build": "DAZ Bryce 5 (2006)", "family": "5", "role": "moon", "install_path": "data/moonimage.dat", "size": 65391, "sha256": "d722b7b7ffe81f5f9beda5aeb288be045929b588dfa30f7105253c3ff21ae0c5"}
+{"build": "DAZ Bryce 5 (2006)", "family": "5", "role": "stars", "install_path": "data/starcat.dat", "size": 808288, "sha256": "6c1255b89e8d88a7aa56f7d25ec7e59b2dbd1dd8ce097a97aef964e1e2421696"}
+{"build": "DAZ Bryce 5 (2006)", "family": "5", "role": "editor", "install_path": "data/terraineditor.dat", "size": 558895, "sha256": "358e50dbf8dafe2e588d4d5cb42a5ce1d04865a6f34119c31f820a822c7933ad"}
