@@ -1,0 +1,14 @@
+schema_version = "1.0.0"
+id = "stecyk3d"
+version = "0.1.0"
+name = "Stecyk3D"
+tagline = "Experimental: render Blender scenes as Bryce would"
+maintainer = "Stecyk3D project"
+type = "add-on"
+blender_version_min = "4.2.0"
+license = ["SPDX:GPL-3.0-or-later"]
+tags = ["Render"]
+copyright = ["2026 The Stecyk3D authors"]
+# A permission reason is at most 64 characters and no end punctuation; a longer one fails
+# `blender --command extension validate`.
+permissions = { files = "Read substrate, presets and documents; write temp descriptions" }
