@@ -204,6 +204,8 @@ class Recorder:
         self.operators, self.menus = [], []
 
     def prop(self, owner, name, **kw):
+        from blender_panels import refuse_non_blender
+        refuse_non_blender(owner, name)
         self.props.append(name)
 
     def label(self, **kw):
@@ -219,6 +221,8 @@ class Recorder:
         self.menus.append(idname)
 
     def template_ID(self, owner, name, **kw):
+        from blender_panels import refuse_non_blender
+        refuse_non_blender(owner, name)
         self.templates.append((name, kw))
 
     def box(self):

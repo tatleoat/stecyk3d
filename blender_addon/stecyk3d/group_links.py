@@ -82,6 +82,11 @@ class SocketView:
         return getattr(self._socket, name)
 
     @property
+    def real(self):
+        """The Blender socket itself (what `layout.prop` takes)."""
+        return self._socket
+
+    @property
     def links(self):
         found = resolve(self._socket, self._stack)
         return [] if found is None else [LinkView(NodeView(found[0], found[2]), found[1])]
@@ -112,6 +117,11 @@ class NodeView:
         return getattr(self._node, name)
 
     @property
+    def real(self):
+        """The Blender node itself (what `layout.prop` and `template_ID` take)."""
+        return self._node
+
+    @property
     def inputs(self):
         return _Inputs(self._node, self._stack)
 
@@ -129,6 +139,11 @@ class NodeView:
 def view(node):
     """`node` read through groups (a node of a material's own tree)."""
     return node if isinstance(node, NodeView) else NodeView(node)
+
+
+def real(thing):
+    """The Blender node or socket behind `thing` (a NodeView or SocketView), or `thing` itself if it is one already."""
+    return thing.real if isinstance(thing, (NodeView, SocketView)) else thing
 
 
 def linked_from(socket):
