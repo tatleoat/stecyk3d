@@ -10,6 +10,15 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import blender_common  # noqa: E402
 
 
+def refuse_non_blender(data, key):
+    """What Blender's layout.prop does: data must be a real bpy struct that has the property (a wrapper is a TypeError)."""
+    import bpy
+    if not isinstance(data, bpy.types.bpy_struct):
+        raise TypeError("layout.prop(%s, %r): expected a bpy_struct, not %s" % (type(data).__name__, key, type(data).__name__))
+    if not key.startswith("[") and key not in data.bl_rna.properties:
+        raise TypeError("layout.prop: %s has no property %r" % (type(data).__name__, key))
+
+
 class Recorder:
     """A layout that records what is drawn: property names and operator calls (nested boxes share one record)."""
 
@@ -25,6 +34,11 @@ class Recorder:
         return Recorder(self.drawn)
 
     def prop(self, data, key, **kw):
+        refuse_non_blender(data, key)
+        self.drawn["props"].append(key)
+
+    def template_ID(self, data, key, **kw):
+        refuse_non_blender(data, key)
         self.drawn["props"].append(key)
 
     def label(self, text="", **kw):
@@ -540,7 +554,24 @@ def check_texture_editor(module, bpy, scene, names):
     drawn = draw(bare)
     assert "Bryce Texture" in drawn["labels"] and "No Bryce Mapping: in object space" in drawn["labels"], drawn["labels"]
     assert not any(t.startswith("Component ") for t in drawn["labels"]), drawn["labels"]
-    print("PANEL-TEXTURE-EDITOR 2 cases drawn")
+    # a texture whose phase noise is reached through a node group: its sockets are views, the layout needs real ones
+    grouped = fresh("editor-grouped")
+    gtree = grouped.node_tree
+    tex = gtree.nodes.new("BryceTextureNode")
+    tex.column = 0
+    inner = bpy.data.node_groups.new("phase-group", "ShaderNodeTree")
+    inner.interface.new_socket("Phase", in_out="OUTPUT", socket_type="NodeSocketFloat")
+    gn = inner.nodes.new("BryceNoiseNode")
+    go = inner.nodes.new("NodeGroupOutput")
+    inner.links.new(gn.outputs[0], go.inputs[0])
+    inst = gtree.nodes.new("ShaderNodeGroup")
+    inst.node_tree = inner
+    gtree.links.new(inst.outputs[0], tex.inputs["phase"])
+    assert tex.inputs["phase"].is_linked
+    drawn = draw(grouped)
+    assert any(t.startswith("Phase of the texture") for t in drawn["labels"]), drawn["labels"]
+    assert drawn["props"].count("value") >= 2, drawn["props"]  # the texture's and the grouped noise's phase amounts
+    print("PANEL-TEXTURE-EDITOR 3 cases drawn")
 
 
 if __name__ == "__main__":

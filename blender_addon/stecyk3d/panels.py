@@ -411,7 +411,7 @@ def draw_cloud_textures(layout, context, world):
         else:
             box.label(text="%s: %s" % (title, source.label or source.name), icon="TEXTURE")
             if source.bl_idname in gather.TEXTURE_NODES:
-                source.draw_buttons(context, box)
+                group_links.real(source).draw_buttons(context, box)
 
 
 class STECYK3D_PT_world(_BrycePanel, bpy.types.Panel):
@@ -597,7 +597,7 @@ def draw_material(layout, context, material, node):
     draw_channels(layout, node)
     col = layout.column()
     col.use_property_split = True
-    node.draw_buttons(context, col)
+    group_links.real(node).draw_buttons(context, col)
     layout.operator("stecyk3d.new_material", icon="LOOP_BACK")
 
 
@@ -615,16 +615,16 @@ def draw_channels(layout, node):
             socket = node.inputs[name]
             source = gather.linked_from(socket) if socket.is_linked else None
             if source is None:
-                box.prop(socket, "value", text=human(name))
+                box.prop(group_links.real(socket), "value", text=human(name))
             elif source.bl_idname in gather.MIX_NODES:
                 row = box.row(align=True)
                 row.label(text=human(name))
-                row.prop(source, "by", text="")
+                row.prop(group_links.real(source), "by", text="")
                 keys = (("a", "   A"), ("b", "   B")) + ((("alpha", "   by"),) if source.by == "ALPHA" else ())
                 for key, title in keys:
                     place = source.inputs[key]
                     row = box.row(align=True)
-                    row.prop(place, "value", text=title)
+                    row.prop(group_links.real(place), "value", text=title)
                     fed = gather.linked_from(place) if place.is_linked else None
                     if fed is not None:
                         row.label(text=source_name(fed), icon="TEXTURE")
@@ -695,7 +695,7 @@ def texture_parts(node):
 def draw_node_body(layout, context, node):
     col = layout.column()
     col.use_property_split = True
-    node.draw_buttons(context, col)
+    group_links.real(node).draw_buttons(context, col)
 
 
 def draw_noise_with_phase(layout, context, noise, title):
@@ -703,7 +703,7 @@ def draw_noise_with_phase(layout, context, noise, title):
     box = layout.box()
     box.label(text=title)
     draw_node_body(box, context, noise)
-    box.prop(noise.inputs["phase"], "value", text="Phase amount")
+    box.prop(group_links.real(noise.inputs["phase"]), "value", text="Phase amount")
     phase = _fed(noise.inputs["phase"])
     if phase is not None and phase.bl_idname == "BryceNoiseNode":
         pb = box.box()
@@ -725,12 +725,12 @@ def draw_texture_parts(layout, context, node):
                                                if node.bl_idname == "BrycePictureNode" else "in object space"),
                   icon="ORIENTATION_GLOBAL")
     if node.bl_idname == "BrycePictureNode":
-        layout.template_ID(node, "image", open="image.open")
+        layout.template_ID(group_links.real(node), "image", open="image.open")
         return
     box = layout.box()
     box.label(text="Bryce Texture", icon="TEXTURE")
     draw_node_body(box, context, node)
-    box.prop(node.inputs["phase"], "value", text="Phase amount")
+    box.prop(group_links.real(node.inputs["phase"]), "value", text="Phase amount")
     if phase is not None:
         draw_noise_with_phase(box, context, phase, "Phase of the texture: " + source_name(phase))
     for k, (comp, blend, filt, noise) in enumerate(found):
@@ -815,7 +815,7 @@ class STECYK3D_PT_material(_BrycePanel, bpy.types.Panel):
             for line in notices:
                 layout.label(text=line, icon="INFO")
         if mix is not None:
-            layout.prop(mix, "amount", text="Two materials mixed", slider=True)
+            layout.prop(group_links.real(mix), "amount", text="Two materials mixed", slider=True)
             for title, end in zip(("First: ", "Second: "), ends):
                 if end is None:
                     layout.label(text=title + "no Bryce Material linked", icon="ERROR")
@@ -824,7 +824,7 @@ class STECYK3D_PT_material(_BrycePanel, bpy.types.Panel):
                 draw_channels(layout, end)
                 col = layout.column()
                 col.use_property_split = True
-                end.draw_buttons(context, col)
+                group_links.real(end).draw_buttons(context, col)
             return
         draw_material(layout, context, material, node)
 

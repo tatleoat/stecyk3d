@@ -4,6 +4,15 @@
 
 Stecyk3D is a renderer, written in Rust with no third-party dependencies, that draws Bryce 3.0, 3.1 and 5.0 scenes the way those programs do, and a Blender add-on ("Stecyk3D for Blender") that lets you render your Blender scenes with it: F12, the Rendered viewport, Bryce material, sky and light nodes in the Shader Editor, Bryce shapes and terrains in the Add menu, and import of saved `.br3` / `.br5` scenes. The renderer is a separate program the add-on starts, so it also runs on its own from the command line.
 
+![Stecyk3D in Blender: the Rendered viewport, a Bryce material's nodes in the Shader Editor and the Bryce material panel](docs/images/blender-window.png)
+
+| | |
+|---|---|
+| ![Chrome, glass and gold spheres on a mirrored checkerboard](docs/images/chrome-glass.png) | ![A terrain over water under a hazy sky](docs/images/landscape.png) |
+| ![A Tree Lab tree against a sunset](docs/images/sunset-tree.png) | ![Marble textures on a sphere, cone and torus](docs/images/procedural.png) |
+
+*Scenes made in Blender with the add-on and rendered with F12: rendered as Bryce 5.0, except the marbles (Bryce 3.1).*
+
 ## Build and install
 
 You need a Rust toolchain (edition 2024, Rust 1.85 or newer) and, for the add-on, Blender 4.2 or newer (tested with 5.2).
