@@ -145,8 +145,35 @@ With no Bryce Sky node the panel says *Renders as a new Bryce document's sky* an
 
 - **Switch grids.** The sky's flag word is shown as grids of switches, one per named bit: *Atmosphere*, *Glow look 1*, *Glow look 2*, *Custom colours*, *Clouds*, *Stratus*, *Cumulus*, *Haze*, *Sky dome light*, *Haze takes the sun's colour*, *Fog takes the sun's colour*, *Clouds follow the view*, *Fixed cloud coordinates*. Ticking **A sky of Bryce 5** adds *Clouds on a dome* and *Haze shift*, and another grid with *Stars*, *Comets* and *Haze as an older document's*. Hover a switch for what it does.
 - **New document's sky.** A button under the Sky settings. It gives the sky the settings a new document of the chosen Program starts with (colours, clouds, haze, fog, moon, stars and the switches). The sun, the scene light and the cloud textures stay as they are.
-- **Cloud-layer textures.** When the sky is a node, the *Stratus texture* and *Cumulus texture* each have a box at the bottom of the panel. The box names the Bryce texture linked to that layer and draws its settings in place, or says *none (link a Bryce texture to the Bryce Sky)*.
-- **Cloud-layer faults.** Above the settings, red lines name a layer that is switched on but has no texture, or that is fed by something that is not a Bryce texture. A texture a render would refuse says so in its own box.
+- **Cloud-layer textures.** When the sky is a node, the *Stratus texture* and *Cumulus texture* each have a box at the bottom of the panel. The box names the Bryce texture linked to that layer and draws its settings in place, or says *none* and, under it, *Link a Bryce texture to the Bryce Sky node's stratus input (Shader Editor, World)* (or *cumulus input*). See [Giving a cloud layer a texture](#giving-a-cloud-layer-a-texture).
+- **Cloud-layer faults.** Above the settings, red lines name a layer that is switched on but has no texture, for example *the sky's Stratus layer is switched on and has no texture: link a Bryce texture to the Bryce Sky node's stratus input (Shader Editor, World), or switch Stratus off*. A red line also names a layer fed by something that is not a Bryce texture. A texture a render would refuse says so in its own box.
+
+### Changing the sky
+
+1. In *Render properties* set **Render Engine** to **Stecyk3D**.
+2. Open the *World properties* tab. If the scene has no world, press **New** at the top of the tab.
+3. Find the **Bryce sky** panel. If it says *Renders as a new Bryce document's sky*, press **Make it a Bryce sky**. This puts a Bryce Sky node on the world's World Output, in place of the Background node, and keeps the world's Bryce sky settings. The panel then says *The sky is its node (Shader Editor, World); this shows it*.
+4. Change the settings in the panel, from the top:
+   - **Sun**: the *Sun object* (or *Sun direction* when the scene has no sun lamp), *Sun color*, *Sun glow color* and *Sun intensity*.
+   - **Sky**: the switch grid (*Atmosphere*, *Clouds*, *Stratus*, *Cumulus*, *Haze* and the rest), then *Zenith*, *Horizon*, *Plain*, *Ambient*, the haze and fog settings and the *Moon picture*. The **New document's sky** button under them gives the sky a new document's settings again.
+   - **Clouds**: *Cover*, *Cover amplitude*, *Cloud height*, *Cloud frequency*, *Cloud offset*, *Detail*, *Cumulus color* and *Cumulus shade*.
+   - **Scene light**: *Ambient color*, *Ambient amount* and *Shadow lift*.
+   - With Program 5.0, **The sun in Bryce 5** and the **A sky of Bryce 5** switch follow.
+5. The closed subpanel **Every sky setting** has every setting of the sky, the ones above included.
+
+### Giving a cloud layer a texture
+
+*Stratus* is the upper cloud layer and *Cumulus* the lower. Each takes its pattern from a Bryce texture linked to the Bryce Sky node. You link it in the Shader Editor.
+
+1. Make the world a Bryce sky first (*Make it a Bryce sky*, above).
+2. Open a Shader Editor. The **Shading** workspace has one, or set any area's editor type to **Shader Editor**.
+3. In the Shader Editor's header, change the *Shader Type* menu from **Object** to **World**. The world's nodes appear: the **Bryce Sky** node linked to the **World Output**.
+4. Choose **Add > Bryce > New texture (Noise, Component, Texture)** (the last entry of the Bryce menu). It adds a Bryce Texture node with a Noise and a Component already wired to it. **Add > Bryce > Texture** adds a Texture node alone instead: it needs a Component linked to its *component* input, and the node (and, once linked, its box on the World tab) says so in red until it has one. (The Bryce menu is there only with the Stecyk3D engine.)
+5. Drag from the Texture node's **color** output to the Bryce Sky node's **stratus** input (the upper layer) or its **cumulus** input (the lower layer). The nodes spell the sockets this way.
+6. In the switch grid under **Sky** on the World tab, make sure *Atmosphere*, *Clouds* and *Stratus* (or *Cumulus*) are ticked. A new sky of Program 3.0 or 3.1 has only *Atmosphere* of these on; one of Program 5.0 also has *Clouds* and *Stratus* on.
+7. The *Stratus texture* (or *Cumulus texture*) box at the bottom of the World tab now names the texture and shows its settings: *Gives*, *Colour space*, and the *Filter* and *Colour map* boxes. The red line about the layer goes. Change the texture's noise and component on their nodes in the Shader Editor.
+
+To have no clouds on a layer instead, untick its switch (*Stratus* or *Cumulus*) in the switch grid under **Sky**. The red line goes too.
 
 ## The Object tab: Bryce shape
 

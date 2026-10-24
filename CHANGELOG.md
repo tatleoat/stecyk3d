@@ -20,6 +20,7 @@ Newest first.
 - The Rendered viewport draws every pixel from its own random place from the start (set Random grain to Exact to get the program's own grain there too). F12 is unchanged.
 - The Render tab's "Wash grain" setting is now called "Random grain", since it covers soft shadows, radius lights and jittered volumes as well as the wash. Saved files keep their setting.
 - Panels now offer the settings of the old Bryce interface: the full Render, World (sky), Object, Material and Texture settings, light key buttons and the Light Lab gradient starter, texture mapping, noise, filter, colours, phase and blend, and Mix Materials limits.
+- The World tab says where a cloud layer's texture goes (the Bryce Sky node's stratus or cumulus input, in the Shader Editor set to World), and its red lines wrap instead of being cut off. The manual has step-by-step instructions for changing the sky and giving a cloud layer a texture.
 
 ### Renderer
 

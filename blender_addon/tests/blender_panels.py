@@ -43,6 +43,7 @@ class Recorder:
 
     def label(self, text="", **kw):
         self.drawn["labels"].append(text)
+        self.drawn.setdefault("icons", []).append((text, kw.get("icon")))
 
     def separator(self, **kw):
         pass
@@ -441,6 +442,101 @@ def check_sky_panel(module, bpy, scene, names):
     print("PANEL-SKY", "switches, grids, button, cloud boxes and faults ok")
 
 
+def check_sky_cloud_steps(module, bpy, scene, names):
+    """The manual's "Giving a cloud layer a texture" (World tab: Bryce sky), step by step: a world made a Bryce sky by
+    *Make it a Bryce sky*, with the Clouds and Stratus switches on and no texture, shows a red fault line that says
+    where to link one, and its Stratus box says how; a Bryce Texture added as Add > Bryce > Texture adds it
+    (`node.add_node` makes the node with `nodes.new`) and linked from its color output to the Bryce Sky node's
+    stratus input clears the fault, and the box draws the texture's settings (with its own fault while it has no
+    component). The *New texture (Noise, Component, Texture)* button works in the World tree too (its execute, as
+    there is no Shader Editor headless) and its texture, on the cumulus input, has no fault."""
+    import types
+    panels = module.panels
+    scene.render.engine = names.ENGINE_ID
+    render = getattr(scene, names.SCENE_RENDER_GROUP)
+    old = render.program
+    render.program = "3.0"
+    world = bpy.data.worlds.new("how-to-sky")
+
+    def draw():
+        rec = Recorder()
+        context = types.SimpleNamespace(world=world, scene=scene, engine=names.ENGINE_ID)
+        panels.STECYK3D_PT_world.draw(types.SimpleNamespace(layout=rec), context)
+        return rec.drawn
+
+    def errors(drawn):  # each red fault: its first line has the error icon, the lines after it a blank one
+        found, going = [], False
+        for text, icon in drawn["icons"]:
+            if icon == "ERROR":
+                found.append(text)
+                going = True
+            elif icon == "BLANK1" and going:
+                found[-1] += " " + text
+            else:
+                going = False
+        return found
+
+    def under(drawn, title):  # the blank-icon lines drawn right under a label, as one sentence
+        icons = drawn["icons"]
+        start = [t for t, _i in icons].index(title) + 1
+        lines = []
+        for text, icon in icons[start:]:
+            if icon != "BLANK1":
+                break
+            lines.append(text)
+        return " ".join(lines)
+
+    try:
+        assert "stecyk3d.make_sky" in draw()["ops"]
+        with bpy.context.temp_override(world=world, scene=scene):
+            assert bpy.ops.stecyk3d.make_sky() == {"FINISHED"}
+        node = module.gather.find_node(world.node_tree, "BryceSkyNode")
+        assert node is not None and node.outputs["sky"].is_linked
+        sky = node.settings
+        sky.flag_1, sky.flag_10, sky.flag_20, sky.flag_40 = True, True, True, False  # Atmosphere, Clouds, Stratus
+        drawn = draw()
+        want = ("the sky's Stratus layer is switched on and has no texture: link a Bryce texture to the Bryce Sky "
+                "node's stratus input (Shader Editor, World), or switch Stratus off")
+        assert errors(drawn) == [want], errors(drawn)
+        assert all(len(t) <= panels.LABEL_WRAP for t in drawn["labels"] if t in want), drawn["labels"]
+        assert "Stratus texture: none" in drawn["labels"], drawn["labels"]
+        hint = under(drawn, "Stratus texture: none")
+        assert hint == "Link a Bryce texture to the Bryce Sky node's stratus input (Shader Editor, World)", hint
+        assert under(drawn, "Cumulus texture: none").startswith("Link a Bryce texture to the Bryce Sky node's cumulus")
+        # Add > Bryce > Texture, then the texture's color output to the sky's stratus input
+        tex = world.node_tree.nodes.new("BryceTextureNode")
+        world.node_tree.links.new(tex.outputs["color"], node.inputs["stratus"])
+        drawn = draw()
+        assert panels.sky_faults(world, "3.0") == []
+        assert not [t for t in errors(drawn) if t.startswith("the sky's")], errors(drawn)
+        assert "Stratus texture: %s" % tex.name in drawn["labels"], drawn["labels"]
+        for key in ("gives_menu", "color_space_menu"):  # the Texture node's own settings, drawn in the box
+            assert key in drawn["props"], drawn["props"]
+        assert any("has no component linked" in t for t in errors(drawn)), errors(drawn)
+        # the New texture button in the World tree: a Noise, a Component and a Texture, wired; on the cumulus input
+        before = {n.name for n in world.node_tree.nodes}
+        ctx = types.SimpleNamespace(space_data=types.SimpleNamespace(edit_tree=world.node_tree,
+                                                                     cursor_location=(0.0, -400.0)))
+        assert module.preset_ops.STECYK3D_OT_new_procedural_texture.execute(None, ctx) == {"FINISHED"}
+        made = [n for n in world.node_tree.nodes if n.name not in before]
+        assert sorted(n.bl_idname for n in made) == ["BryceComponentNode", "BryceNoiseNode", "BryceTextureNode"]
+        new_tex = next(n for n in made if n.bl_idname == "BryceTextureNode")
+        assert new_tex.inputs["component"].is_linked and module.node_ui.faults(new_tex) == []
+        world.node_tree.links.new(new_tex.outputs["color"], node.inputs["cumulus"])
+        sky.flag_40 = True
+        drawn = draw()
+        assert panels.sky_faults(world, "3.0") == []
+        assert "Cumulus texture: %s" % new_tex.name in drawn["labels"], drawn["labels"]
+        # or the other way out: no texture, the layer switched off
+        world.node_tree.links.remove(node.inputs["stratus"].links[0])
+        assert len(panels.sky_faults(world, "3.0")) == 1
+        sky.flag_20 = False
+        assert panels.sky_faults(world, "3.0") == [] and not errors(draw())
+    finally:
+        render.program = old
+    print("PANEL-SKY-CLOUD-STEPS", "make sky, fault line, Texture linked, New texture, switch off ok")
+
+
 def check_material_panel(module, bpy, scene, names):
     """The Bryce material panel (Material tab): channel rows with a mix's A, B and by rows, the second material and
     its amount, the copied/left list with Dismiss, and the faults and notes lines."""
@@ -620,6 +716,7 @@ if __name__ == "__main__":
     check_render_panel(module, bpy, scene, names, _substrate)
     check_object_panel(module, bpy, scene, names)
     check_sky_panel(module, bpy, scene, names)
+    check_sky_cloud_steps(module, bpy, scene, names)
     check_material_panel(module, bpy, scene, names)
     check_texture_editor(module, bpy, scene, names)
     print("PANELS-OK")
