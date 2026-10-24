@@ -5,6 +5,7 @@
 """Panels drawing the registered settings in their table order."""
 
 import array
+import textwrap
 
 import bpy
 
@@ -390,10 +391,20 @@ def sky_faults(world, program):
         if source is None:
             if flags & 1 and (program == "5.0" or flags & 0x10) and flags & bit:
                 found.append("the sky's %s layer is switched on and has no texture: link a Bryce texture to the Bryce "
-                             "Sky's %s, or switch the layer off" % (layer.capitalize(), layer.capitalize()))
+                             "Sky node's %s input (Shader Editor, World), or switch %s off"
+                             % (layer.capitalize(), layer, layer.capitalize()))
         elif source.bl_idname not in gather.TEXTURE_NODES:
             found.append("the sky's %s layer is fed by %s, not a Bryce texture" % (layer.capitalize(), source.bl_idname))
     return found
+
+
+LABEL_WRAP = 50  # characters a line of the Properties editor shows at its usual width (a longer label is cut)
+
+
+def wrapped_label(layout, text, icon):
+    """A long sentence as several labels, the icon on the first and a blank one before the rest."""
+    for i, line in enumerate(textwrap.wrap(text, LABEL_WRAP) or [text]):
+        layout.label(text=line, icon=icon if i == 0 else "BLANK1")
 
 
 def draw_cloud_textures(layout, context, world):
@@ -407,7 +418,9 @@ def draw_cloud_textures(layout, context, world):
         box = layout.box()
         title = "%s texture" % layer.capitalize()
         if source is None:
-            box.label(text=title + ": none (link a Bryce texture to the Bryce Sky)", icon="TEXTURE")
+            box.label(text=title + ": none", icon="TEXTURE")
+            wrapped_label(box, "Link a Bryce texture to the Bryce Sky node's %s input (Shader Editor, World)" % layer,
+                          "BLANK1")
         else:
             box.label(text="%s: %s" % (title, source.label or source.name), icon="TEXTURE")
             if source.bl_idname in gather.TEXTURE_NODES:
@@ -432,7 +445,7 @@ class STECYK3D_PT_world(_BrycePanel, bpy.types.Panel):
             col.label(text="The sky is its node (Shader Editor, World); this shows it", icon="NODETREE")
             program = getattr(context.scene, names.SCENE_RENDER_GROUP).program
             for fault in sky_faults(context.world, program):
-                col.label(text=fault, icon="ERROR")
+                wrapped_label(col, fault, "ERROR")
         draw_sky(col, gather.sky_group(context.world), is_five(context), context)
         if gather.find_node(context.world.node_tree if context.world.use_nodes else None, "BryceSkyNode") is not None:
             draw_cloud_textures(col, context, context.world)
