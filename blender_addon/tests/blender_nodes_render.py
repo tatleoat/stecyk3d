@@ -75,6 +75,21 @@ def operators(bpy, scene, prefix):
     r, g, b = centre(path)
     assert r > g + 40 and r > b + 40, "red Principled gives a red ball: %r" % ((r, g, b),)
     log.append(("shader", (r, g, b)))
+    # The further Principled inputs reach the render: a raised Specular IOR Level (Reflection), glass (Transparency
+    # and refraction); each ball differs from the new material's
+    for label, inputs in (("mirror", {"Specular IOR Level": 1.0}),
+                          ("glass", {"Transmission Weight": 1.0, "IOR": 1.33})):
+        mat = bpy.data.materials.new("r-" + label)
+        mat.use_nodes = True
+        bsdf = next(n for n in mat.node_tree.nodes if n.bl_idname == "ShaderNodeBsdfPrincipled")
+        for name, number in inputs.items():
+            bsdf.inputs[name].default_value = number
+        stage(bpy, scene, mat)
+        with bpy.context.temp_override(material=mat):
+            bpy.ops.stecyk3d.material_from_shader()
+        path = frame(bpy, scene, prefix, label)
+        assert centre(path) != log[0][1], "%s Principled renders as the new material: %r" % (label, centre(path))
+        log.append((label, centre(path)))
     # Bryce settings to nodes: an older file's material group
     mat = bpy.data.materials.new("r-old")
     mat.bryce.diffuse_color.a = (0.02, 0.1, 0.9)

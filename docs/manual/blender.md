@@ -90,9 +90,16 @@ A mesh whose material has no Bryce Material node renders as a *new Bryce materia
   | Base Color | Diffuse colour | converted to the displayed (sRGB) colour |
   | Roughness | Specularity | 1 - roughness |
   | Metallic | Metallicity | as is |
-  | Alpha | Transparency | 1 - alpha |
+  | Alpha and Transmission Weight | Transparency | 1 - alpha x (1 - transmission x (1 - metallic)): the light that passes straight through (alpha) plus the light the glass lets through |
+  | Transmission Weight | Transparent colour | the base colour for glass, white for light that passes by alpha, mixed by their shares |
+  | IOR | Refraction | as is (Bryce's refraction value is the index of refraction; the Materials Lab shows it times 100), only where Transmission Weight lets light through and Thin Wall is off |
+  | Specular IOR Level | Reflection | 2 x level - 1, from 0 to 1: Blender's neutral 0.5 and below give no mirror, 1 a full mirror. Below 0.5 the highlight (Specularity) fades to none at 0 |
+  | Transmission and Specular IOR Level | Diffusion | 1 x (1 - transmission x (1 - metallic)) x (1 - reflection): Blender shares the light between its layers, Bryce adds them, so a glass or mirror keeps only Blender's diffuse share |
+  | Specular Tint | Specular colour | converted to the displayed colour |
   | Emission Color and Strength | Ambient colour and Ambience | colour as above; ambience = strength, at most 1 |
   | everything else | the new material's defaults | |
+
+  Every input left at Blender's own default gives the same material as before these inputs were read. A glass is Transmission Weight 1 with the IOR you want (water 1.33); a mirror is Specular IOR Level 1. Coat, Sheen, Subsurface, Anisotropic, Thin Film and Diffuse Roughness have no Bryce counterpart: when one is set the add-on says it was not carried.
 
   A linked input (a texture or any node) is not carried: its constant is used, and the add-on lists which inputs were linked.
   The panel then lists, in a box headed *From a Blender material: what is the same thing in both was copied*, what was copied (check marks) and, under *Left for you to set in Bryce's terms:*, what was not. **Dismiss this list** clears the box; the material is unchanged.

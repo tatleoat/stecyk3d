@@ -6,6 +6,7 @@
 """Build each node by idname, check its sockets, save and reload a .blend, then a whole texture through the writer."""
 
 import copy
+import json
 import os
 import sys
 import types
@@ -413,6 +414,26 @@ def check_shader_ops():
            for k in ("diffuse_color", "ambient_color", "specularity", "metallicity", "transparency", "ambience")}
     same(got, {"diffuse_color": [1.0, 0.0, 0.5], "ambient_color": [0.0, 1.0, 0.0], "specularity": 0.75,
                "metallicity": 0.5, "transparency": 0.25, "ambience": 0.4}, "Principled mapped to channels")
+    # the further inputs: glass, a raised specular level, a tinted highlight; a coat is reported, not carried
+    glass = bpy.data.materials.new("op-glass")
+    glass.use_nodes = True
+    gb = next(n for n in glass.node_tree.nodes if n.bl_idname == "ShaderNodeBsdfPrincipled")
+    gb.inputs["Base Color"].default_value = (1.0, 0.0, 0.21404114, 1.0)
+    gb.inputs["Transmission Weight"].default_value = 1.0
+    gb.inputs["IOR"].default_value = 1.25
+    gb.inputs["Specular IOR Level"].default_value = 0.75
+    gb.inputs["Specular Tint"].default_value = (0.21404114, 1.0, 0.0, 1.0)
+    gb.inputs["Coat Weight"].default_value = 0.5
+    with bpy.context.temp_override(material=glass):
+        same(bpy.ops.stecyk3d.material_from_shader(), {"FINISHED"}, "from shader op, glass")
+    gn = next(n for n in glass.node_tree.nodes if n.bl_idname == "BryceMaterialNode")
+    got = {k: (vec(gn.inputs[k].value) if k in names.COLOUR_CHANNELS else round(gn.inputs[k].value, 4))
+           for k in ("transparency", "transparent_color", "reflection", "specular_color", "diffusion")}
+    got["refraction"] = round(gn.refraction, 4)
+    same(got, {"transparency": 1.0, "transparent_color": [1.0, 0.0, 0.5], "reflection": 0.5,
+               "specular_color": [0.5, 1.0, 0.0], "diffusion": 0.0, "refraction": 1.25}, "Principled glass mapped")
+    told = json.loads(gn.converted)
+    check("Transmission Weight" in told["copied"] and told["left"] == ["Coat Weight"], "converted list " + repr(told))
     bare = bpy.data.materials.new("no-shader")
     bare.use_nodes = True
     bare.node_tree.nodes.clear()

@@ -119,21 +119,35 @@ def settings_to_nodes():
     return done[0], done[1], done[2], notes
 
 
+# The Principled BSDF's inputs principled_map carries, and the keyword each is passed as (None: positional).
+PRINCIPLED_CARRIED = (("Base Color", None), ("Roughness", None), ("Metallic", None), ("Alpha", None),
+                      ("Emission Color", None), ("Emission Strength", None), ("Transmission Weight", "transmission"),
+                      ("IOR", "ior"), ("Specular IOR Level", "specular_level"), ("Specular Tint", "specular_tint"),
+                      ("Thin Wall", "thin_wall"))
+
+
 def from_principled(material):
-    """The Principled BSDF's constants as a Bryce material. Returns the notes (inputs that were linked), or None
-    when the material has no Principled BSDF."""
+    """The Principled BSDF's constants as a Bryce material. Returns (linked, not carried): the carried inputs that
+    were linked and the inputs set but with no Bryce counterpart; or None when the material has no Principled
+    BSDF. An input this Blender's node does not have takes principled_map's neutral value."""
+    import json
     tree = material.node_tree if material.use_nodes else None
     node = next((n for n in tree.nodes if n.bl_idname == PRINCIPLED), None) if tree else None
     if node is None:
         return None
     ins = node.inputs
-    linked = [s.name for s in ins if s.is_linked and s.name in (
-        "Base Color", "Roughness", "Metallic", "Alpha", "Emission Color", "Emission Strength")]
-    value = principled_map.material_value(
-        ins["Base Color"].default_value, ins["Roughness"].default_value, ins["Metallic"].default_value,
-        ins["Alpha"].default_value, ins["Emission Color"].default_value, ins["Emission Strength"].default_value)
-    material_nodes.write_material(material, value)
-    return linked
+    present = [(name, key) for name, key in PRINCIPLED_CARRIED if ins.get(name) is not None]
+    linked = [name for name, _ in present if ins[name].is_linked]
+    args = [ins[name].default_value for name, key in present if key is None]
+    keywords = {key: ins[name].default_value for name, key in present if key is not None}
+    value = principled_map.material_value(*args, **keywords)
+    left = principled_map.not_carried({name: ins[name].default_value for name, _ in principled_map.NO_COUNTERPART
+                                       if ins.get(name) is not None})
+    bryce = material_nodes.write_material(material, value)
+    bryce.converted = json.dumps({
+        "copied": [name for name, _ in present if name not in linked and name != "Thin Wall"],
+        "left": ["%s (linked: its constant was used)" % name for name in linked] + left})
+    return linked, left
 
 
 class _Op:
@@ -199,7 +213,7 @@ class STECYK3D_OT_settings_to_nodes(_Op, bpy.types.Operator):
 
 class STECYK3D_OT_from_shader(_Op, bpy.types.Operator):
     """Replace the active material's nodes with a Bryce Material made from its Principled BSDF's colour,
-    roughness, metallic, alpha and emission (the table is in)"""
+    roughness, metallic, alpha, transmission, IOR, specular and emission (the table is in principled_map.py)"""
     bl_idname = "stecyk3d.material_from_shader"
     bl_label = "Bryce material from the Blender shader"
 
@@ -208,12 +222,15 @@ class STECYK3D_OT_from_shader(_Op, bpy.types.Operator):
         return context.material is not None
 
     def execute(self, context):
-        linked = from_principled(context.material)
-        if linked is None:
+        told = from_principled(context.material)
+        if told is None:
             self.report({"ERROR"}, "The material has no Principled BSDF")
             return {"CANCELLED"}
+        linked, left = told
         if linked:
             self.report({"WARNING"}, "Linked inputs not carried (their constants were used): " + ", ".join(linked))
+        if left:
+            self.report({"WARNING"}, "Set but with no Bryce counterpart, not carried: " + ", ".join(left))
         return {"FINISHED"}
 
 
