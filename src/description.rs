@@ -2239,6 +2239,47 @@ mod tests {
         assert!(describe(&text(&bad)).is_err());
     }
 
+    /// A tree grown from settings whose wood has a piece of no thickness is refused, naming the tree and the setting: such a
+    /// piece holds every point, the camera's too, and the whole picture came out black. A tree straight from
+    /// Add > Bryce shape > Tree has every setting 0. (The noise table is made up: growth needs one, and whether a piece
+    /// has a thickness does not depend on its numbers.)
+    #[test]
+    fn a_tree_with_wood_of_no_thickness_is_refused() {
+        let noise: [u32; 64] = std::array::from_fn(|i| (i as u32 + 1).wrapping_mul(0x9E37_79B9));
+        let tables = Tables { noise_bits_five: Some(&noise), leaf: None };
+        let text = |settings: &str| {
+            format!(
+                "{{\"size\": [8, 6], \"render\": {{\"version\": \"5.0\", \"units\": 1.0}}, \"sky\": {{}}, \
+                 \"sun\": {{\"direction\": [0.3, 0.6, -0.7], \"colour\": [1, 1, 1]}}, \
+                 \"camera\": {{\"position\": [0, 0, -10], \"forward\": [0, 0, 1], \"up\": [0, 1, 0], \"frame_angle\": 1.0}}, \
+                 \"objects\": [], \"trees\": [{{\"name\": \"Bryce tree\", \"world\": [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0], \
+                 \"tree\": {{{settings}}}}}]}}"
+            )
+        };
+        let fresh = "\"seed\": 0, \"trunk-heights\": [0, 0], \"trunk-branches\": 0, \"branch-branches\": 0, \"angles\": [0, 0], \
+                     \"shares\": [0, 0], \"leaves\": 0, \"leaf-kind\": 3, \"outline\": {\"O0\": [0, 0], \"O1\": [0, 0], \
+                     \"O2\": [0, 0], \"O3\": [0, 0]}, \"trunk-thickness\": 0, \"least-thickness\": 0, \"randomness\": 0, \
+                     \"power\": 0, \"gravity\": 0, \"turn\": 0, \"leaf-size\": 0";
+        let e = describe_with(&text(fresh), &tables).err().expect("a fresh tree is refused");
+        assert!(e.0.contains("\"Bryce tree\"") && e.0.contains("trunk-thickness is 0"), "{}", e.0);
+        // a tree with a thickness and a least thickness grows (the add-on test scene's settings, no leaves)
+        let grown = "\"seed\": 1234, \"trunk-heights\": [6, 8], \"trunk-branches\": 2, \"branch-branches\": 3, \
+                     \"angles\": [0.5, 1.0], \"shares\": [0.5, 0.75], \"leaves\": 0, \"leaf-kind\": 5, \"outline\": \
+                     {\"O0\": [0.25, 0.25], \"O1\": [0.5, 0.5], \"O2\": [0.75, 0.25], \"O3\": [0.25, 0.75]}, \
+                     \"trunk-thickness\": 0.125, \"least-thickness\": 0.015625, \"randomness\": 0.25, \"power\": 0.5, \
+                     \"gravity\": 0.125, \"turn\": 1.0, \"leaf-size\": 0.25";
+        let d = describe_with(&text(grown), &tables).unwrap_or_else(|e| panic!("{}", e.0));
+        assert!(d.scene.stored_trees[0].pieces.len() > 8);
+        // the trunk's thickness alone is not enough: a radius falls to the least radius 3·least-thickness at a
+        // branch's end, so with none the trunk's last piece has no thickness
+        let thin = grown
+            .replace("\"least-thickness\": 0.015625", "\"least-thickness\": 0")
+            .replace("\"trunk-heights\": [6, 8], \"trunk-branches\": 2", "\"trunk-heights\": [2, 2], \"trunk-branches\": 0")
+            .replace("\"trunk-thickness\": 0.125", "\"trunk-thickness\": 0.25");
+        let e = describe_with(&text(&thin), &tables).err().expect("a tree with no least thickness is refused");
+        assert!(e.0.contains("least-thickness is 0"), "{}", e.0);
+    }
+
     #[test]
     fn a_metaball_is_read_with_its_sign() {
         let ball = |sign: &str| {

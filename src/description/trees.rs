@@ -12,7 +12,7 @@ use crate::cases::json::Value;
 use crate::geom::Vec3;
 use crate::scene_records::Transform;
 use crate::scene_trees::{GrowthSettings, Leaf, LeafPlace, LeafShape, StoredTree, WoodPiece};
-use crate::trees::{GrowthInputs, LeafRun, Placement};
+use crate::trees::{GrownTree, GrowthInputs, LeafRun, Placement};
 
 /// "A new tree": the deepest level of branching a tree made new has. Growth reads the setting and
 /// does not use it (Inputs), so a description that does not give it takes this.
@@ -87,6 +87,29 @@ pub(super) fn growth_inputs(t: &Value, tree: &str) -> Rd<GrowthInputs> {
     })
 }
 
+/// A tree grown from settings with a piece of wood whose map is singular (no thickness or no length) is refused, an
+/// own refusal of this program: such a piece holds every point, the camera's eye among them (`TreeModel::holds_point`),
+/// so the whole picture would be drawn as from inside the tree, black. The setting named is the one that makes every
+/// piece's radius 0 (the roots' from trunk-thickness) or lets a radius fall to 0 (no least radius 3·least-thickness).
+/// A tree a document stored is drawn as stored (`stored_tree_given`), singular pieces and all.
+fn flat_wood_refused(grown: &GrownTree, inputs: &GrowthInputs, name: &str) -> Rd<()> {
+    let singular = |p: &Placement| crate::geometry::tree::tree_map([p[0], p[1], p[2]], p[3]).is_none();
+    let Some(k) = grown.pieces.iter().position(|p| singular(&p.placement)) else {
+        return Ok(());
+    };
+    let why = if inputs.trunk_thickness == 0.0 {
+        "its trunk-thickness is 0: give it one above 0".to_owned()
+    } else if inputs.least_thickness == 0.0 {
+        "its least-thickness is 0: give it one above 0".to_owned()
+    } else {
+        format!("piece {k} of its wood has no thickness or no length")
+    };
+    err(format!(
+        "tree {name:?} is refused, {why} (a piece of wood with no thickness holds every point, the camera's too, \
+         and would turn the whole picture black)"
+    ))
+}
+
 fn transform_of(p: &Placement) -> Transform {
     // (A placement: x·A + y·B + z·C + T), (a transform as's: rows, then
     // the translation)
@@ -111,6 +134,7 @@ pub(super) fn stored_tree_of(t: &Value, name: &str, tables: &Tables<'_>) -> Rd<S
     };
     let grown = crate::trees::grow(&inputs, LeafRun::of_seed(inputs.seed), noise)
         .map_err(|e| DescriptionError(format!("tree {name:?}: {e}")))?;
+    flat_wood_refused(&grown, &inputs, name)?;
     let shapes = match tables.leaf {
         Some(mesh) => {
             let triangles = mesh.triangles_with_normals();
