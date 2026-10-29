@@ -46,9 +46,10 @@ The renderer imitates three programs: 3.0, 3.1 and 5.0. The Render tab's **Progr
 | Progressive, Live order, Random grain | The live picture (above). |
 | Viewport quality, Viewport pixel size | The Rendered viewport (above). |
 | Units | The scale between Blender units and Bryce units (1 = the same). |
-| Exact png | If set to a file name, the renderer's 8-bit levels are also written there as a plain PNG, independent of Blender's colour settings. |
+| Exact png | If set to a file name, the renderer's 8-bit levels are also written there as a plain PNG, independent of Blender's colour settings and of the [finishing](#finishing-not-bryces). The name is resolved like Blender's output path (see [Where pictures are saved](#where-pictures-are-saved)); in an animation each frame gets its own file: a run of `#` becomes the frame number, otherwise four digits go before the extension (`lake.png` -> `lake0003.png`). |
 | Presets folder | A folder of `.mat` and `.brt` preset libraries to offer in the material tab. Empty: the libraries of your substrate. |
 | Import Bryce document | Button; see [Importing](#importing-bryce-scenes). |
+| Finishing (subpanel, closed) | Optional 90s finishing of the picture after the render; **not Bryce's**, all off by default. See [Finishing](#finishing-not-bryces). |
 
 At the top of the tab, once a substrate exists, a box says *Substrate: N tables of Bryce's names* and lists each table of names it holds with its count (these feed the menus of the Noise, Filter and Blend nodes). Without a substrate the box is the red error described under [First render](#first-render).
 
@@ -194,6 +195,22 @@ Shown for mesh and empty objects.
 - **After Make substrate**, a box *Last Make substrate: done in N s* (or *failed*, with the reasons) lists, per folder, what was recognised and how many files were kept, and then, for each Bryce program file, which tables were found in it. It stays until the next press or until Blender closes.
 - The *Substrate*, *Renderer* and *Extractor* lines show what was found, as before.
 
+### Finishing (not Bryce's)
+
+Pre-rendered Bryce pictures of the 90s were usually finished afterwards in a paint program or a web exporter: a glow round the sun, a KPT lens flare, a JPEG or a 256-colour GIF save. The **Finishing** subpanel of the Render tab does that to the finished picture. **None of it is part of Bryce's renderer**, and none of it follows Bryce's numbers: with every switch off (the default) the picture is Bryce's, byte for byte, and **Exact png** always holds the renderer's own levels. Finishing applies to F12 and to the files Blender saves (stills and every frame of an animation), not to the Rendered viewport or the material thumbnails. The steps run in this order:
+
+| Setting | Meaning |
+|---|---|
+| Bright above | The brightness (0 to 1, of the picture as shown) above which a pixel counts as a light source, for the glow and the lens flare. Fully bright 0.15 above it. Default 0.6. |
+| Glow | A glow round the bright places (the sun or moon disc, glowing objects): the bright pixels blurred twice, a tight bloom and a wide halo, tinted and screened over the picture, so it never darkens anything. **Size**: the halo's width as a share of the picture's width (0.07); the bloom is about a sixth of it. **Strength**: 1 is the reference look; 0 is none. **Tint**: the glow's colour (a pale blue by default, made for a moon; choose a warm one for a sun). |
+| Lens flare | Discs and rings along the line from the sun (or the moon, which is opposite the sun) through the centre of the picture, added on top, in the manner of KPT Lens Flare. Drawn only when the sun or moon is in the frame and shows there (brighter than *Bright above*), so not when it is behind a mountain or under the horizon. **Strength** scales it. The scene's camera must be a perspective camera; with another the render is refused and says so. The sprites' places, sizes and colours are this add-on's own choice. |
+| JPEG | One save and reload as a baseline JPEG at **Quality** (1 to 100, libjpeg's scale; 75 by default), for the blocks and colour smearing of the period: the standard tables of the JPEG standard, colour at half resolution (4:2:0). |
+| Palette (GIF) | The picture in at most **Colours** colours (2 to 256; 256 by default), chosen from its own colours (median cut), with an ordered 8x8 Bayer dither. A picture that already has that few colours is unchanged. |
+
+## Where pictures are saved
+
+Pictures go where Blender's own output path says, as with Cycles and Eevee. Note that on Windows, Blender puts an output path with **no drive letter and no `//`** (for example `out\lake.png`) on the **root of the Windows drive** (`C:\out\lake.png`), not in the folder you started Blender from or beside the blend file: Blender prints `Saved: 'C:\out\lake.png'`. Start the path with `//` for the blend file's folder (`//out/lake.png`), or give a full path. The Render tab shows a note with the folder when the output path is of that kind. Exact png follows the same rule.
+
 ## Refusals and the report
 
 When a scene holds something the renderer cannot draw faithfully, it **refuses** rather than approximating. F12 stops, the status bar gets one short line, for example
@@ -224,4 +241,4 @@ How it behaves:
 
 ## Animation
 
-Blender renders animation frame by frame, and the add-on reads the scene as Blender evaluates it at each frame. Importing a Bryce document does not create keyframes (see above). Rendering Bryce animation ranges from a saved document is a command-line job (`--frames`).
+Blender renders animation frame by frame (*Render > Render Animation*, or `bpy.ops.render.render(animation=True)`), and the add-on reads the scene as Blender evaluates it at each frame: keyframed or driven objects, lamps, the camera and the sky's settings (on the World tab or the Bryce Sky node) all take their values of the frame being drawn. Exact png writes one file per frame (see [The Render tab](#the-render-tab)). Importing a Bryce document does not create keyframes (see above). Rendering Bryce animation ranges from a saved document is a command-line job (`--frames`).

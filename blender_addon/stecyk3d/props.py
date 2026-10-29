@@ -51,6 +51,12 @@ RENDER = [
     # the settings vectors never see it. Default on — the live picture is the default way to render.
     ("progressive", "bool", None), ("live_order", "enum", names.LIVE_ORDER),
     ("wash_grain", "enum", names.WASH_GRAIN),
+    # Finishing (finishing.py): the 90s treatment done to the picture after the render, not Bryce's; all off by
+    # default, and kept out of the description like the rows above.
+    ("finish_threshold", "float", None), ("glow", "bool", None), ("glow_size", "float", None),
+    ("glow_strength", "float", None), ("glow_tint", "colour", None), ("flare", "bool", None),
+    ("flare_strength", "float", None), ("jpeg", "bool", None), ("jpeg_quality", "int", None),
+    ("palette", "bool", None), ("palette_colours", "int", None),
 ]
 SKY = [
     ("flags", "word", None), ("cloud_height", "float", None), ("cumulus_color", "colour", None),
@@ -166,9 +172,18 @@ def _program_changed(self, context):
     apply_program_defaults(self.program)
 
 
+# Limits of the add-on's own settings that have no Bryce counterpart (the finishing; finishing.problems checks the
+# same ranges).
+LIMITS = {("render", "finish_threshold"): {"min": 0.0, "max": 1.0},
+          ("render", "glow_size"): {"min": 0.001, "soft_max": 0.5}, ("render", "glow_strength"): {"min": 0.0},
+          ("render", "flare_strength"): {"min": 0.0}, ("render", "jpeg_quality"): {"min": 1, "max": 100},
+          ("render", "palette_colours"): {"min": 2, "max": 256}}
+
+
 def make_property(group_key, name, kind, extra):
     default = DEFAULTS.get((group_key, name))
     kw = {"name": name}
+    kw.update(LIMITS.get((group_key, name), {}))
     if (group_key, name) == ("render", "program"):
         kw["update"] = _program_changed
     if default is not None:

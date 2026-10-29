@@ -9,6 +9,7 @@ Newest first.
 - A tree grown from Tree Lab settings (and any object given only a `matrix`) now stands where it was placed: the renderer read the translation from the fourth row of the matrix instead of the fourth column, so it dropped it and drew every such tree at the world origin. The add-on also sends every tree's `world`, not only stored ones. (GitHub issue #1)
 - The Rendered viewport no longer looks washed out until the first F12: the scene is set to the Raw view transform (look None, dithering 0) when the viewport first starts on it, and when a Bryce document is imported. Blender's Color Management panel is now shown with the Stecyk3D engine.
 - The Material tab's Texture components panel and the per-channel mix rows no longer stop with an error when a texture or mix comes through a node group.
+- Render Animation now draws the sky of each frame: keyframed or driven sky settings (haze, the sky's sun direction, and the rest) used to keep the values of the frame the render started at. Exact png writes one file per frame of an animation instead of overwriting one, and is saved where Blender saves its own output (a relative path on Windows with no drive and no `//` goes on the drive's root, as Blender's `Saved:` line shows; the Render tab now says where).
 
 ### Name
 
@@ -16,6 +17,7 @@ Newest first.
 
 ### Blender add-on
 
+- Optional 90s finishing of the picture after the render, in a closed **Finishing** subpanel of the Render tab: a glow round the sun, moon and glowing objects, a lens flare when the sun or moon shows in the frame, one JPEG round trip at a chosen quality, and a palette of N colours with ordered dither (the GIF look). Not part of Bryce's renderer; all off by default, which leaves the picture Bryce's byte for byte, and Exact png always keeps the renderer's levels.
 - F12 is faster: the add-on no longer pauses while it reads the renderer's picture, and it hands the picture to Blender much faster (a small scene at 640x480: about 1 s -> 0.1 s; at 1920x1440: about 13 s -> 0.5 s). Pictures are unchanged.
 - The Rendered viewport restarts at once when you move the view: the render going on is cancelled, and the new view's first pixels appear in a fraction of a second.
 - The Rendered viewport draws every pixel from its own random place from the start (set Random grain to Exact to get the program's own grain there too). F12 is unchanged.

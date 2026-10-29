@@ -5,6 +5,7 @@
 """Panels drawing the registered settings in their table order."""
 
 import array
+import os
 import textwrap
 
 import bpy
@@ -255,6 +256,23 @@ RENDER_REST = ("depth", "preview", "progressive", "live_order", "wash_grain", "v
                "presets_folder")
 
 
+def draw_output_place(layout, context):
+    """On Windows, where Blender puts pictures whose output path has no drive letter and no `//`: on the root of the
+    Windows drive, not beside the blend file or in the working folder (Cycles and Eevee do the same)."""
+    import sys
+    from . import outputs
+    path = context.scene.render.filepath
+    if not sys.platform.startswith("win") or not path or path.startswith("//") \
+            or outputs.blender_place(path, "", True, "") == path:
+        return  # not Windows, or a path with a drive, `//` or a network path: it goes where it says
+    try:
+        folder = os.path.dirname(context.scene.render.frame_path(frame=context.scene.frame_current))
+    except Exception:
+        return
+    wrapped_label(layout, "Output path has no drive and no //: Blender saves in %s. Start it with // for the "
+                          "blend file's folder." % folder, "INFO")
+
+
 def draw_substrate_state(layout, context):
     """Where a render would be refused for want of the substrate: the reason, and a button to the preferences."""
     from . import engine
@@ -362,7 +380,36 @@ class STECYK3D_PT_render(_BrycePanel, bpy.types.Panel):
                 if int(sky.scene_flags) & DEPTH_OF_FIELD_BIT:
                     prop_list(box, group, ("focus", "focal_distance", "lens_radius"), five)
         prop_list(col, group, RENDER_REST, five)
+        draw_output_place(col, context)
         col.operator("stecyk3d.import_document", icon="IMPORT")
+
+
+# The Finishing subpanel (finishing.py): each switch, then its own settings, shown only while it is on.
+FINISHING = (("glow", "Glow", (("glow_size", "Size"), ("glow_strength", "Strength"), ("glow_tint", "Tint"))),
+             ("flare", "Lens flare", (("flare_strength", "Strength"),)),
+             ("jpeg", "JPEG", (("jpeg_quality", "Quality"),)),
+             ("palette", "Palette (GIF)", (("palette_colours", "Colours"),)))
+
+
+class STECYK3D_PT_render_finishing(_BrycePanel, bpy.types.Panel):
+    bl_label = "Finishing"
+    bl_context = "render"
+    bl_parent_id = "STECYK3D_PT_render"
+    bl_options = {"DEFAULT_CLOSED"}
+
+    def draw(self, context):
+        group = getattr(context.scene, names.SCENE_RENDER_GROUP)
+        col = self.layout.column()
+        wrapped_label(col, "Not Bryce's: done to the finished picture afterwards (F12 and the saved file; not the "
+                           "viewport, not exact_png), like a 90s paint program. All off gives Bryce's picture.", "INFO")
+        col.use_property_split = True
+        col.prop(group, "finish_threshold", text="Bright above")
+        for switch, label, rows in FINISHING:
+            box = col.box().column()
+            box.prop(group, switch, text=label)
+            if getattr(group, switch):
+                for key, text in rows:
+                    box.prop(group, key, text=text)
 
 
 # The settings of the sky record itself (a new document's values): not the sun, the scene light or the textures.
@@ -968,7 +1015,7 @@ class STECYK3D_PT_object(_BrycePanel, bpy.types.Panel):
 
 
 CLASSES = [STECYK3D_OT_list_edit, STECYK3D_OT_light_flag, STECYK3D_OT_light_lab, STECYK3D_OT_preferences_show, STECYK3D_OT_scene_flag, STECYK3D_OT_shape_standin,
-           STECYK3D_OT_dismiss_converted, STECYK3D_PT_render, STECYK3D_PT_world, STECYK3D_PT_world_all, STECYK3D_PT_light, STECYK3D_PT_camera, STECYK3D_PT_material,
+           STECYK3D_OT_dismiss_converted, STECYK3D_PT_render, STECYK3D_PT_render_finishing, STECYK3D_PT_world, STECYK3D_PT_world_all, STECYK3D_PT_light, STECYK3D_PT_camera, STECYK3D_PT_material,
            STECYK3D_PT_object]
 
 CLASSES.append(STECYK3D_OT_sky_new)

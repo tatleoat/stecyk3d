@@ -16,7 +16,7 @@ import time
 
 import bpy
 
-from . import gather, names, refusal_report, stream, viewport
+from . import finishing, gather, names, outputs, refusal_report, stream, viewport
 
 SUBSTRATE_VARIABLE = "BRYCE_SUBSTRATE"
 
@@ -327,6 +327,12 @@ class BryceRenderEngine(bpy.types.RenderEngine):
         except ValueError as error:  # convert refuses a named thing (a zero direction, Errors)
             self.report({"ERROR"}, "Not rendered: %s" % error)
             return
+        group = getattr(scene, names.SCENE_RENDER_GROUP, None)
+        # Finishing (finishing.py, not Bryce's): only for the pictures F12 and an animation make, not thumbnails.
+        finish = finishing.settings_of(group) if group is not None and not self.is_preview else {}
+        if finishing.wanted(finish):
+            camera = gather.evaluated_camera(depsgraph)
+            problems = list(problems) + finishing.problems(finish, camera.data.type if camera is not None else None)
         if problems:
             self.refuse("Not rendered", problems)
             return
@@ -341,7 +347,6 @@ class BryceRenderEngine(bpy.types.RenderEngine):
         # refreshed as the pixels come. The finished picture is the exact render's either
         # way. Thumbnails (the material previews) keep the plain path: they are quick and
         # the preview windows are small. (the live picture)
-        group = getattr(scene, names.SCENE_RENDER_GROUP, None)
         progressive = group is not None and bool(getattr(group, "progressive", True)) and not self.is_preview
         self.stop_previous()  # a new render ends the old render's program (task T2)
 
@@ -434,7 +439,10 @@ class BryceRenderEngine(bpy.types.RenderEngine):
         # The final rectangle from the finished levels, exact (blender-integration.md 2.2 checked: rect has
         # one item per pixel and foreach_set takes w*h*4 floats, the rows from the bottom of the picture up;
         # in Blender 5.2 the flat one-argument form of foreach_set is the one offered).
-        pixels = stream.rgba_floats(levels, width, height)  # k/255 as singles, alpha 1, rows from the bottom up
+        shown = levels
+        if finishing.wanted(finish):  # the picture Blender shows and saves; exact_png keeps the renderer's levels
+            shown = finishing.finish(levels, width, height, finish, light_places(depsgraph, description, width, height))
+        pixels = stream.rgba_floats(shown, width, height)  # k/255 as singles, alpha 1, rows from the bottom up
         result.layers[0].passes["Combined"].rect.foreach_set(pixels)
         self.end_result(result)
         self.update_progress(1.0)
@@ -442,7 +450,9 @@ class BryceRenderEngine(bpy.types.RenderEngine):
         exact_png = scene.bryce_render.exact_png  # exact_png
         if exact_png:
             from .png import write_png
-            write_png(bpy.path.abspath(exact_png), width, height, levels)
+            path = exact_png_place(exact_png, scene.frame_current if self.is_animation else None)
+            os.makedirs(os.path.dirname(path) or ".", exist_ok=True)  # as Blender makes its output folders
+            write_png(path, width, height, levels)
 
     def plain_colour(self, scene):
         """Task T1 (colours unchanged): the levels are written as k/255 scene-linear, so they reach an 8-bit
@@ -456,6 +466,39 @@ class BryceRenderEngine(bpy.types.RenderEngine):
         if changed:
             self.report({"INFO"}, "Stecyk3D set the scene's %s so the rendered levels reach the picture "
                                   "unchanged" % ", ".join(changed))
+
+
+def windows_drive():
+    """The drive Windows is installed on ("C:"), where Blender puts a path with no drive (BLI_windows_get_default_root_dir)."""
+    return os.path.splitdrive(os.environ.get("SystemRoot", ""))[0] or "C:"
+
+
+def exact_png_place(path, frame=None):
+    """Where exact_png goes: the place Blender gives its own output path (outputs.blender_place), and in an animation
+    one file per frame (outputs.frame_file)."""
+    blend = bpy.data.filepath
+    place = outputs.blender_place(path, os.path.dirname(blend) if blend else "", sys.platform.startswith("win"),
+                                  windows_drive())
+    return outputs.frame_file(place, frame) if frame is not None else place
+
+
+def light_places(depsgraph, description, width, height):
+    """Where the sun and the moon (the renderer's moon is opposite the sun) project into the picture: (x, y) in pixels
+    from the top left, for those in front of the camera. finishing.light_in_picture then looks whether they show."""
+    from bpy_extras.object_utils import world_to_camera_view
+    from mathutils import Vector
+    camera = gather.evaluated_camera(depsgraph)
+    toward = ((description or {}).get("sun") or {}).get("direction")
+    if camera is None or not toward:
+        return []
+    toward = Vector((toward[0], toward[2], toward[1]))  # the description's axes back to Blender's ((x, z, y))
+    origin = camera.matrix_world.translation
+    places = []
+    for direction in (toward, -toward):
+        seen = world_to_camera_view(depsgraph.scene_eval, camera, origin + direction)
+        if seen.z > 0.0:
+            places.append((seen.x * width, (1.0 - seen.y) * height))
+    return places
 
 
 def get_panels():

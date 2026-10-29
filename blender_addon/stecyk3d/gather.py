@@ -612,7 +612,11 @@ def describe(depsgraph, notices=None, view_camera=False):
     """The description of the evaluated scene, and the list of problems that refuse the render (Errors).
     `view_camera` True: the Rendered viewport asks (The Rendered viewport); the scene's
     camera is neither read nor refused, the description's camera is left None for the viewport's own."""
-    scene = depsgraph.scene
+    # A render (F12, Render Animation) evaluates each frame into its own graph's copies and leaves the original data at
+    # the frame it started, so there the world (the sky's settings, keyframed or driven) is read from the copies. The
+    # viewport's graph is the one the original data follows, and keeps copies that a custom property set since may
+    # not have reached.
+    scene = depsgraph.scene_eval if depsgraph.mode == "RENDER" else depsgraph.scene
     problems = []
     notices = [] if notices is None else notices  # messages that do not refuse the render
     textures = []  # the description's textures , filled as the materials are read
