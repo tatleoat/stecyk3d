@@ -187,7 +187,7 @@ To have no clouds on a layer instead, untick its switch (*Stratus* or *Cumulus*)
 Shown for mesh and empty objects.
 
 - **Role** (in a group: *Role in its group*) of the object in a Bryce group, and **Cut shows positive** for a negative one; **Shape**, the Bryce shape the object stands for.
-- A mesh has the **Terrain from Mesh** button (also in the *Object* menu). For a terrain, its settings are in a box and **Show the terrain** rebuilds the viewport mesh from the terrain's picture (the picture must be square).
+- A mesh has the **Terrain from Mesh** button (also in the *Object* menu). For a terrain, its settings are in a box and **Show the terrain** rebuilds the viewport mesh from the terrain's picture (the picture must be square). With the grid set to *Auto*, a picture whose side is not 16, 32, 64, 128, 256, 512 or 1024 points is resampled when you render to the next of those sizes up (at most 1024), over the same area, so the terrain keeps its shape and size; the render report says so and from what size.
 - A **torus** has **Torus radii (tube, ring)**; *Add > Bryce shape > Torus* sets them (a torus made another way says *none set*).
 - A **metaball** has **Negative**. A metaball or tree under a Program other than 5.0 renders as its stand-in mesh, and the panel says so.
 - A **tree** has the *Tree Lab* boxes, with the tree's seed: **Trunk and branches**, **Shape (distance from the trunk, height)** and **Foliage (material slot 2: the leaves')**. The tree is 2 high, its foot 1 below the object's origin.

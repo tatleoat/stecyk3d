@@ -17,6 +17,7 @@ Newest first.
 ### Blender add-on
 
 - *Bryce material from the Blender shader* carries more of the Principled BSDF: Transmission Weight (Transparency, with the base colour as the Transparent colour), IOR (Refraction, for transmitted light), Specular IOR Level above 0.5 (Reflection, full at 1) and Specular Tint (Specular colour), with Diffusion keeping Blender's diffuse share under a glass or mirror. A Principled glass or mirror now converts to one. Inputs left at Blender's defaults give the same material as before; a set Coat, Sheen, Subsurface, Anisotropic, Thin Film or Diffuse Roughness is reported as not carried.
+- A terrain whose picture is not 16, 32, ... 1024 points a side (grid Auto) is no longer refused: it is resampled to the next of those sizes up (at most 1024), bilinear over the same area, and the render report says so and from what size.
 - F12 is faster: the add-on no longer pauses while it reads the renderer's picture, and it hands the picture to Blender much faster (a small scene at 640x480: about 1 s -> 0.1 s; at 1920x1440: about 13 s -> 0.5 s). Pictures are unchanged.
 - The Rendered viewport restarts at once when you move the view: the render going on is cancelled, and the new view's first pixels appear in a fraction of a second.
 - The Rendered viewport draws every pixel from its own random place from the start (set Random grain to Exact to get the program's own grain there too). F12 is unchanged.
