@@ -9,9 +9,10 @@ Start at the top and go down. Most people need pages 1 to 3.
 1. [Installing](installing.md): build the renderer, install the Blender add-on, make your first render.
 2. [Making the substrate](substrate.md): the one data file every render needs, made from your own Bryce install.
 3. [Rendering from Blender](blender.md): F12, the Rendered viewport, the Bryce nodes, importing Bryce scenes.
-4. [Command-line rendering](command-line.md): the renderer without Blender (it is a separate program, so it can run on its own).
-5. [File formats](file-formats.md): which files are read and written.
-6. [Known differences, limits and troubleshooting](troubleshooting.md).
+4. [Scripting](scripting.md): build and render Bryce scenes from a Python script, and compare several looks side by side.
+5. [Command-line rendering](command-line.md): the renderer without Blender (it is a separate program, so it can run on its own).
+6. [File formats](file-formats.md): which files are read and written.
+7. [Known differences, limits and troubleshooting](troubleshooting.md).
 
 For programmers there is also [How it works](../how-it-works/README.md).
 

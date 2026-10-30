@@ -8,10 +8,12 @@ Two layers:
 
 | Layer | Modules | Notes |
 |---|---|---|
-| Pure | `convert.py`, `axes.py`, `camera_frame.py`, `scene_read.py`, `lamps.py`, `solids.py`, `channels.py`, `numbers.py`, `reader.py`, `presets.py`, `components.py`, `create.py`, `importing.py`, `stream.py` | Turn plain values into plain values. They do not import `bpy`, so they are tested with ordinary `python3 -m unittest`. |
-| Blender | `engine.py`, `panels.py`, `props.py`, `nodes.py`, `gather.py`, `material_nodes.py`, `viewport*.py`, `import_op.py`, `preset_ops.py`, `create_ops.py`, `terrain_tool.py` | Thin: read Blender data into plain dicts, draw panels, register types. |
+| Pure | `convert.py`, `axes.py`, `camera_frame.py`, `scene_read.py`, `lamps.py`, `solids.py`, `channels.py`, `numbers.py`, `reader.py`, `presets.py`, `components.py`, `create.py`, `importing.py`, `stream.py`, `scripting.py` | Turn plain values into plain values. They do not import `bpy`, so they are tested with ordinary `python3 -m unittest`. |
+| Blender | `engine.py`, `panels.py`, `props.py`, `nodes.py`, `gather.py`, `material_nodes.py`, `viewport*.py`, `import_op.py`, `preset_ops.py`, `create_ops.py`, `terrain_tool.py`, `api.py` | Thin: read Blender data into plain dicts, draw panels, register types. |
 
 `__init__.py` imports `bpy` only inside `register()`.
+
+`api.py` is the scripting API ([Scripting](../manual/scripting.md)): the one module whose names are kept stable for users' scripts. It calls the other modules, so they can change without breaking those scripts; its plain parts (terrain heights and the surface under a point, channel overrides, variants, the contact sheet's layout and font) are in `scripting.py`.
 
 ## Rendering: a child program
 

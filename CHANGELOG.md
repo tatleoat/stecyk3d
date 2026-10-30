@@ -16,6 +16,7 @@ Newest first.
 
 ### Blender add-on
 
+- A scripting API (`api` module; [docs/manual/scripting.md](docs/manual/scripting.md)) for scripts that build and render Bryce scenes without reaching into the add-on: presets with fallbacks and channel overrides, materials from a colour, shapes and terrains made without the 3D cursor (a terrain from a height function, with the exact height of the drawn surface under a point), the sky and lights by setting name, renders to absolute paths, several looks rendered in one Blender or in parallel headless ones, and a labelled contact sheet. `examples/lake/` builds a moonlit lake scene with it.
 - F12 is faster: the add-on no longer pauses while it reads the renderer's picture, and it hands the picture to Blender much faster (a small scene at 640x480: about 1 s -> 0.1 s; at 1920x1440: about 13 s -> 0.5 s). Pictures are unchanged.
 - The Rendered viewport restarts at once when you move the view: the render going on is cancelled, and the new view's first pixels appear in a fraction of a second.
 - The Rendered viewport draws every pixel from its own random place from the start (set Random grain to Exact to get the program's own grain there too). F12 is unchanged.
