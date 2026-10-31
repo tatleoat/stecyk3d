@@ -180,7 +180,7 @@ fn u32_at(v: &Value, key: &str, default: u32) -> Rd<u32> {
 
 /// The description's world is (units · x, units · z, units · y) of Blender's: rows are
 /// `units · C·Mᵀ·C` with M the object's Blender world matrix as rows, and the translation
-/// `units · t` with y and z swapped ('s change of axes, applied to a 4x4 matrix).
+/// `units · t` (t = the fourth column of M) with y and z swapped ('s change of axes, applied to a 4x4 matrix).
 /// (axes and units)
 fn bryce_transform(matrix: &Value, units: f64, what: &str) -> Rd<Transform> {
     let rows = matrix.as_array().ok_or_else(|| DescriptionError(format!("{what} is not a matrix")))?;
@@ -205,8 +205,8 @@ fn bryce_transform(matrix: &Value, units: f64, what: &str) -> Rd<Transform> {
             out_rows[i][j] = units * m[swap(j)][swap(i)];
         }
     }
-    let t = &m[3];
-    let translation = [units * t[0], units * t[2], units * t[1]];
+    // Blender's matrix_world keeps the translation in the fourth column (the rows are Blender's rows, as above)
+    let translation = [units * m[0][3], units * m[2][3], units * m[1][3]];
     if !out_rows.iter().flatten().chain(&translation).all(|c| c.is_finite()) {
         return err(format!("{what} has a number that is not finite"));
     }
@@ -2243,7 +2243,7 @@ mod tests {
     fn a_metaball_is_read_with_its_sign() {
         let ball = |sign: &str| {
             with_object(&format!(
-                "{{\"name\": \"b\", \"shape\": \"metaball\", \"matrix\": [[2, 0, 0, 0], [0, 2, 0, 0], [0, 0, 2, 0], [1, 2, 3, 1]], {sign}}}"
+                "{{\"name\": \"b\", \"shape\": \"metaball\", \"matrix\": [[2, 0, 0, 1], [0, 2, 0, 2], [0, 0, 2, 3], [0, 0, 0, 1]], {sign}}}"
             ))
         };
         let d = ball("\"sign\": -1").expect("a metaball is read");
