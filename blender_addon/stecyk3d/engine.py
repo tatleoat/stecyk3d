@@ -45,7 +45,7 @@ class Stecyk3DPreferences(bpy.types.AddonPreferences):
     # Read only to migrate a value saved by an older version (not shown): see MakeSubstrate.
     install_folders: bpy.props.StringProperty(options={"HIDDEN"})
     show_advanced: bpy.props.BoolProperty(name="Advanced", default=False)
-    # Set once the earlier release's saved values were read (migrate.migrate_preferences), so a cleared field stays cleared.
+    # Set by earlier releases after they copied older saved values once; kept so existing preferences still load.
     earlier_values_read: bpy.props.BoolProperty(options={"HIDDEN"})
 
     def fields(self):
@@ -171,13 +171,15 @@ def default_substrate_path():
     return os.path.join(base, PROGRAM_FOLDER, DEFAULT_FILE) if base else ""
 
 
+EARLIER_PROGRAM_FOLDER = "vista"  # the substrate's default folder before it was named after the program
+
+
 def earlier_substrate_path():
     """The substrate an earlier release made in its own default folder, when this release's place has none yet."""
-    from . import migrate
     path = default_substrate_path()
     if not path:
         return ""
-    earlier = os.path.join(os.path.dirname(os.path.dirname(path)), migrate.OLD_PROGRAM_FOLDER, DEFAULT_FILE)
+    earlier = os.path.join(os.path.dirname(os.path.dirname(path)), EARLIER_PROGRAM_FOLDER, DEFAULT_FILE)
     return earlier if os.path.isfile(earlier) and not os.path.isfile(path) else ""
 
 

@@ -60,7 +60,7 @@ The add-on sets the view transform to Raw, look to None and dither to 0, so Blen
 
 ## Files saved under the first name
 
-The first release went by a working name (another extension id, engine id, program names and default substrate folder). `migrate.py` is the one place that still spells it. When a file is opened, its scenes are moved to the Stecyk3D engine (the old engine id is registered for the moment the file is read, because Blender resets a scene whose engine is unknown), the scene's plain custom properties are renamed, and the old extension's saved preference values (the Bryce folders, substrate file, program paths) are copied once into this one's. The old default substrate folder is still read when the new one has no file. Nothing needs to be done by the user.
+The renderer's substrate used to live in a default folder named `vista`; that folder is still read when the new default folder has no file. Nothing needs to be done by the user.
 
 ## Tests
 

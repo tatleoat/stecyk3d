@@ -10,7 +10,7 @@ bl_info = {
     "category": "Render",
 }
 
-_MODULES = ("props", "nodes", "engine", "panels", "shader_ops", "terrain_tool", "preset_ops", "node_menu", "create_ops", "import_op", "migrate")
+_MODULES = ("props", "nodes", "engine", "panels", "shader_ops", "terrain_tool", "preset_ops", "node_menu", "create_ops", "import_op")
 
 
 def _modules():

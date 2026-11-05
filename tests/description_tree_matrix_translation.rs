@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // A tree with no `world` is placed by its `matrix`, whose translation Blender keeps in the fourth column: a tree
 // moved along x draws a different picture (before the fix the translation was read from the fourth row, always 0).
-// design: docs/design/blender-addon.md (axes and units)
+// (axes and units)
 
 use stecyk3d::description::describe;
 use stecyk3d::render::{OpenChoices, render_lit};
