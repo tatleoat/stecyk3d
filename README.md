@@ -13,7 +13,19 @@ Stecyk3D is a renderer, written in Rust with no third-party dependencies, that d
 
 *Scenes made in Blender with the add-on and rendered with F12: rendered as Bryce 5.0, except the marbles (Bryce 3.1).*
 
-## Build and install
+## Download
+
+The [releases](../../releases) have a prebuilt add-on zip for each platform (Linux x64, macOS arm64, Windows x64 and arm64) with the programs inside. Install it in *Edit > Preferences > Get Extensions* (the small arrow menu at the top right: *Install from Disk...*).
+
+After you install it, **you need to extract some data from Bryce**, as described in the next section.
+
+## You need your own Bryce
+
+The renderer needs some fixed data tables and a few data files (a moon picture, a star catalogue, tree leaves, preset libraries). **None of it is in this package.** `stecyk3d-extract` (the add-on's *Make substrate* button) reads them once, on your machine, from your own Bryce 3D 3.0, 3.1 or Bryce 5.0 install and writes a private "substrate" file. Without it, a render stops and says what is missing.
+
+In *Edit > Preferences > Add-ons > Stecyk3D*, fill in the folder of each Bryce version you own and press **Make substrate** (once). Set the render engine to **Stecyk3D** and press F12. The whole walk-through is in [docs/manual](docs/manual/README.md).
+
+## Build and install yourself
 
 You need a Rust toolchain (edition 2024, Rust 1.85 or newer) and, for the add-on, Blender 4.2 or newer (tested with 5.2).
 
@@ -23,15 +35,9 @@ blender --command extension build --source-dir blender_addon/stecyk3d --output-d
 blender --command extension install-file -r user_default -e /tmp/stecyk3d-0.1.0.zip
 ```
 
-Then, in *Edit > Preferences > Add-ons > Stecyk3D*, fill in the folder of each Bryce version you own and press **Make substrate** (once). Set the render engine to **Stecyk3D** and press F12. The whole walk-through is in [docs/manual](docs/manual/README.md).
-
 ### Programs and where the add-on looks for them
 
-The add-on does not contain the programs; build them with `cargo build --release` (they land in `target/release/`) or `cargo install`. For each program (`stecyk3d-render`, `stecyk3d-extract`) it looks, in order: the path set under Advanced in the add-on preferences; a `bin` folder beside the add-on; a folder on `PATH`; `$CARGO_TARGET_DIR/release`, a `target/release` in a folder above the add-on, and `~/.cargo/bin`. A prebuilt Linux x86_64 download may be offered later as a GitHub release; it is not part of this repository or of the extension zip.
-
-## You need your own Bryce
-
-The renderer needs some fixed data tables and a few data files (a moon picture, a star catalogue, tree leaves, preset libraries). **None of it is in this package.** `stecyk3d-extract` (the add-on's *Make substrate* button) reads them once, on your machine, from your own Bryce 3D 3.0, 3.1 or Bryce 5.0 install and writes a private "substrate" file. Without it, a render stops and says what is missing.
+The add-on does not contain the programs; build them with `cargo build --release` (they land in `target/release/`) or `cargo install`. For each program (`stecyk3d-render`, `stecyk3d-extract`) it looks, in order: the path set under Advanced in the add-on preferences; a `bin` folder beside the add-on; a folder on `PATH`; `$CARGO_TARGET_DIR/release`, a `target/release` in a folder above the add-on, and `~/.cargo/bin`.
 
 ## Documentation
 

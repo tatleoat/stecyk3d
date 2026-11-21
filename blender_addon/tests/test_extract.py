@@ -71,6 +71,18 @@ class ExtractCommand(unittest.TestCase):
             self.assertEqual(extract.search_program(exe, own, addon, env, root)[0], own)
             self.assertEqual(extract.search_program(exe, os.path.join(root, "gone"), addon, env, root)[0], bundled)
 
+    @unittest.skipIf(sys.platform.startswith("win"), "Windows has no executable bit")
+    def test_bundled_program_made_executable(self):
+        with tempfile.TemporaryDirectory() as root:
+            addon = os.path.join(root, "stecyk3d")
+            bundled = os.path.join(addon, "bin", extract.EXTRACTOR_NAME)
+            os.makedirs(os.path.dirname(bundled))
+            open(bundled, "w").close()
+            os.chmod(bundled, 0o644)  # as Blender's extension install leaves it
+            self.assertFalse(os.access(bundled, os.X_OK))
+            self.assertEqual(extract.search_program(extract.EXTRACTOR_NAME, "", addon, {"PATH": ""}, root)[0], bundled)
+            self.assertTrue(os.access(bundled, os.X_OK))
+
     def test_report_reading(self):
         out = ("/a/B3: recognised as Bryce 3D 3.0\nBryce 3D.exe: tables taken: perm\n/a/B3: 21 kept files taken under X\n"
                "/a/B5: recognised as Corel Bryce 5.0\n/a/B5: 86 kept files taken under Y\n")

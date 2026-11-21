@@ -1,0 +1,59 @@
+# When a `v*` tag is pushed to GitHub (e.g.: v0.1.0), this workflow builds the
+# installable add-on zip for each platform. Each archive contains the renderer
+# programs in its `bin` folder. The archives are then published as a release.
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  renderer:
+    strategy:
+      matrix:
+        include:
+          - { platform: linux-x64, os: ubuntu-latest }
+          - { platform: macos-arm64, os: macos-latest }
+          - { platform: windows-x64, os: windows-latest }
+          - { platform: windows-arm64, os: windows-11-arm }
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo build --release --locked
+      - uses: actions/upload-artifact@v7
+        with:
+          name: bin-${{ matrix.platform }}
+          path: |
+            target/release/stecyk3d-render
+            target/release/stecyk3d-extract
+            target/release/stecyk3d-render.exe
+            target/release/stecyk3d-extract.exe
+          if-no-files-found: error
+
+  addon:
+    needs: renderer
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v7
+        with:
+          path: bins
+      - run: sudo snap install blender --channel=5.2lts/stable --classic
+      - name: Build the add-on zips
+        run: |
+          version=$(sed -n 's/^version = "\(.*\)"/\1/p' blender_addon/stecyk3d/blender_manifest.toml)
+          mkdir dist
+          for dir in bins/bin-*; do
+            platform=${dir#bins/bin-}
+            rm -rf blender_addon/stecyk3d/bin
+            cp -r "$dir" blender_addon/stecyk3d/bin
+            blender --background --factory-startup --command extension build \
+              --source-dir blender_addon/stecyk3d --output-filepath "dist/stecyk3d-$version-$platform.zip"
+          done
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" dist/*.zip --title "$GITHUB_REF_NAME" --generate-notes
