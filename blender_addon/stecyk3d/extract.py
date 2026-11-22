@@ -92,8 +92,16 @@ def search_program(name, override="", addon_dir=None, env=None, home=None):
             return override, tried
     here = addon_dir or os.path.dirname(os.path.abspath(__file__))
     for folder in (os.path.join(here, "bin"), os.path.join(os.path.dirname(here), "bin")):
-        if hit(os.path.join(folder, exe)):
-            return os.path.join(folder, exe), tried
+        path = os.path.join(folder, exe)
+        if hit(path):
+            # Blender's extension install drops the executable bit:
+            # https://projects.blender.org/blender/blender-addons/issues/73074
+            if not os.access(path, os.X_OK):
+                try:
+                    os.chmod(path, os.stat(path).st_mode | 0o111)
+                except OSError:
+                    pass
+            return path, tried
     on_path = shutil.which(name, path=env.get("PATH"))
     if on_path:
         return on_path, tried
