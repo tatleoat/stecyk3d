@@ -98,7 +98,7 @@ A mesh whose material has no Bryce Material node renders as a *new Bryce materia
   The panel then lists, in a box headed *From a Blender material: what is the same thing in both was copied*, what was copied (check marks) and, under *Left for you to set in Bryce's terms:*, what was not. **Dismiss this list** clears the box; the material is unchanged.
 - *Make it a new Bryce material* (*New Bryce material* once the node is there) gives the material the Bryce Material node with a new Bryce material's settings.
 - *Bryce settings to nodes* moves the settings held in files made by older versions onto Bryce nodes.
-- The material tab also offers preset libraries (`.mat`, `.brt` files from the Presets folder or from your substrate) and a *Texture components* panel to add, show, remove, reset and randomise a material's texture components.
+- The material tab also offers preset libraries (`.mat`, `.brt` files from the Presets folder or from your substrate) and a *Texture components* panel to add, show, remove, reset and randomise a material's texture components. Every preset of a library the add-on reads applies, except Ion Damage, which says why (its texture has no component). A preset that applies can still be refused at render time, with the reason, where the renderer does not know what Bryce does with a setting it holds.
 
 ### The Material tab, once the material has Bryce nodes
 

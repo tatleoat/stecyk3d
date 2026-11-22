@@ -25,7 +25,7 @@ bash blender_addon/tests/run_all.sh        # needs Blender; builds the programs 
 
 `run_all.sh` builds the release programs, makes a small test substrate with `make_test_substrate.py` (it holds only made-up values, enough for the checks, not Bryce's data), builds and validates the extension zip, installs it into a scratch Blender profile and runs the Blender scripts. Set `BLENDER` to the Blender program if it is not called `blender`. Output goes to `out/tests`. The last line is `RUN-ALL-OK` when everything passed.
 
-Tests that need a substrate (such as `tests/serve.rs`) take its path from `BRYCE_SUBSTRATE` and skip themselves when it is not set. Set `STECYK3D_TRACE_THREADS=1` to see on standard error whether a render ran on all cores or stayed serial, and why.
+Tests that need a substrate (such as `tests/serve.rs`) take its path from `BRYCE_SUBSTRATE` and skip themselves when it is not set. `test_all_presets.py` applies every preset of every library of a real install: set `BRYCE_PRESETS` to the install's Presets folder (or `BRYCE_SUBSTRATE`, for the libraries the extractor kept); run directly, it prints the report. `blender_presets_all.py` does the same through the material panel's commands in Blender and draws each preset; it needs a real substrate. Set `STECYK3D_TRACE_THREADS=1` to see on standard error whether a render ran on all cores or stayed serial, and why.
 
 ## Checking your own render
 

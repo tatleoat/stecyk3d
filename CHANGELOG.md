@@ -9,6 +9,7 @@ Newest first.
 - A tree grown from Tree Lab settings (and any object given only a `matrix`) now stands where it was placed: the renderer read the translation from the fourth row of the matrix instead of the fourth column, so it dropped it and drew every such tree at the world origin. The add-on also sends every tree's `world`, not only stored ones. (GitHub issue #1)
 - The Rendered viewport no longer looks washed out until the first F12: the scene is set to the Raw view transform (look None, dithering 0) when the viewport first starts on it, and when a Bryce document is imported. Blender's Color Management panel is now shown with the Stecyk3D engine.
 - The Material tab's Texture components panel and the per-channel mix rows no longer stop with an error when a texture or mix comes through a node group.
+- Every preset of the material and texture libraries the add-on reads now applies. Material presets with a mixed channel (Distant Mountain, Whole Mountain, Riverbed, Wet Rock, Desert I, Walnut and others) and Tutorial Light Gel stopped with "float() argument must be ... not 'NoneType'"; texture presets whose saved result is not a number (most bump textures, such as techno city 2) stopped when added. Ion Damage is still refused (its texture has no component).
 
 ### Name
 
