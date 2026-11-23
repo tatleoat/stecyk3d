@@ -10,6 +10,7 @@ Newest first.
 - The Rendered viewport no longer looks washed out until the first F12: the scene is set to the Raw view transform (look None, dithering 0) when the viewport first starts on it, and when a Bryce document is imported. Blender's Color Management panel is now shown with the Stecyk3D engine.
 - The Material tab's Texture components panel and the per-channel mix rows no longer stop with an error when a texture or mix comes through a node group.
 - A tree whose Tree Lab settings grow a piece of wood with no thickness (a *Thickness* of 0, as a tree fresh from *Add > Bryce shape > Tree* has, or often a *Least* of 0) is refused with a message naming the tree and the setting. It turned the whole picture black.
+- Render Animation now draws the sky of each frame: keyframed or driven sky settings (haze, the sky's sun direction, and the rest) used to keep the values of the frame the render started at. Exact png writes one file per frame of an animation instead of overwriting one, and is saved where Blender saves its own output (a relative path on Windows with no drive and no `//` goes on the drive's root, as Blender's `Saved:` line shows; the Render tab now says where).
 
 ### Name
 
@@ -19,6 +20,7 @@ Newest first.
 
 - *Bryce material from the Blender shader* carries more of the Principled BSDF: Transmission Weight (Transparency, with the base colour as the Transparent colour), IOR (Refraction, for transmitted light), Specular IOR Level above 0.5 (Reflection, full at 1) and Specular Tint (Specular colour), with Diffusion keeping Blender's diffuse share under a glass or mirror. A Principled glass or mirror now converts to one. Inputs left at Blender's defaults give the same material as before; a set Coat, Sheen, Subsurface, Anisotropic, Thin Film or Diffuse Roughness is reported as not carried.
 - A terrain whose picture is not 16, 32, ... 1024 points a side (grid Auto) is no longer refused: it is resampled to the next of those sizes up (at most 1024), bilinear over the same area, and the render report says so and from what size.
+- Optional 90s finishing of the picture after the render, in a closed **Finishing** subpanel of the Render tab: a glow round the sun, moon and glowing objects, a lens flare when the sun or moon shows in the frame, one JPEG round trip at a chosen quality, and a palette of N colours with ordered dither (the GIF look). Not part of Bryce's renderer; all off by default, which leaves the picture Bryce's byte for byte, and Exact png always keeps the renderer's levels.
 - F12 is faster: the add-on no longer pauses while it reads the renderer's picture, and it hands the picture to Blender much faster (a small scene at 640x480: about 1 s -> 0.1 s; at 1920x1440: about 13 s -> 0.5 s). Pictures are unchanged.
 - The Rendered viewport restarts at once when you move the view: the render going on is cancelled, and the new view's first pixels appear in a fraction of a second.
 - The Rendered viewport draws every pixel from its own random place from the start (set Random grain to Exact to get the program's own grain there too). F12 is unchanged.

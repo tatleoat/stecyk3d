@@ -8,7 +8,7 @@ Two layers:
 
 | Layer | Modules | Notes |
 |---|---|---|
-| Pure | `convert.py`, `axes.py`, `camera_frame.py`, `scene_read.py`, `lamps.py`, `solids.py`, `channels.py`, `numbers.py`, `reader.py`, `presets.py`, `components.py`, `create.py`, `importing.py`, `stream.py` | Turn plain values into plain values. They do not import `bpy`, so they are tested with ordinary `python3 -m unittest`. |
+| Pure | `convert.py`, `axes.py`, `camera_frame.py`, `scene_read.py`, `lamps.py`, `solids.py`, `channels.py`, `numbers.py`, `reader.py`, `presets.py`, `components.py`, `create.py`, `importing.py`, `stream.py`, `outputs.py`, `finishing.py` (numpy, which Blender's Python has; its tests skip without it) | Turn plain values into plain values. They do not import `bpy`, so they are tested with ordinary `python3 -m unittest`. |
 | Blender | `engine.py`, `panels.py`, `props.py`, `nodes.py`, `gather.py`, `material_nodes.py`, `viewport*.py`, `import_op.py`, `preset_ops.py`, `create_ops.py`, `terrain_tool.py` | Thin: read Blender data into plain dicts, draw panels, register types. |
 
 `__init__.py` imports `bpy` only inside `register()`.
@@ -35,6 +35,14 @@ Some shading draws random numbers (soft shadows, radius lights, jittered volumes
 - **Fast** (`--independent-random`): a place of its own for every pixel from the start, on every core.
 
 Where the grain is not exact, the picture has the same kind of grain but not the same numbers. Scenes with metaballs or trees also run on every core, with the same picture as one core gives. `STECYK3D_DRAWS` (`exact`, `independent` or a number) sets the same thing for the command line.
+
+## Finishing (not Bryce's)
+
+`finishing.py` holds the optional 90s finishing (glow, lens flare, JPEG round trip, palette with ordered dither) as functions of numpy arrays. `engine.py` checks the switched-on finishing before the render (`finishing.problems`: a lens flare needs a perspective camera, numbers in range, numpy present) and refuses with the reason; after the render it passes the renderer's levels, and where the sun and the moon (opposite the sun) project into the picture (`light_places`, by Blender's `world_to_camera_view`), to `finishing.finish`, and puts what comes back into the render result. Blender then shows and saves that. Exact png is written from the renderer's levels, before finishing. With every switch off nothing is called and the result is the levels as they came. The settings are rows of the render group (`props.RENDER`), so they never reach the description and a change does not restart the viewport.
+
+## Animation and output paths
+
+`gather.describe` reads the evaluated scene (`depsgraph.scene_eval`), so the world's sky settings are the frame's own in an animation render (Blender evaluates each frame into the render's copies and leaves the original data at the starting frame). Exact png's path is resolved by `outputs.blender_place` the way Blender resolves its output path (`//`, and on Windows a path with no drive goes on the Windows drive's root), with one file per frame (`outputs.frame_file`) when `RenderEngine.is_animation`.
 
 ## The Rendered viewport
 

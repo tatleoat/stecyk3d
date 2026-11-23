@@ -34,6 +34,12 @@ GROUP_DEFAULTS = {
     ("render", "live_order"): "ROWS",  # (Live order)
     ("render", "wash_grain"): "AUTO",  # (Wash grain)
     ("render", "progressive"): True,  # (task T2)
+    # Finishing (finishing.py, not Bryce's), all off; the numbers when switched on are a moonlit
+    # look tuned by eye (threshold 0.6, halo 0.07 of the width, its tint), a 256-colour GIF and a JPEG at libjpeg's 75.
+    ("render", "glow"): False, ("render", "flare"): False, ("render", "jpeg"): False, ("render", "palette"): False,
+    ("render", "finish_threshold"): 0.6, ("render", "glow_size"): 0.07, ("render", "glow_strength"): 1.0,
+    ("render", "glow_tint"): (0.62, 0.82, 1.0), ("render", "flare_strength"): 1.0, ("render", "jpeg_quality"): 75,
+    ("render", "palette_colours"): 256,
     ("sky", "flags"): WORD_SKY_FLAGS_30, ("sky", "cloud_height"): 36.1328125,
     ("sky", "cumulus_color"): (0.8, 0.8, 0.8), ("sky", "stratus_color"): (1.0, 1.0, 1.0),
     ("sky", "cloud_offset"): (0.0, 0.0),
