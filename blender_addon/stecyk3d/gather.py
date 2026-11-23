@@ -454,8 +454,9 @@ def placed_record(obj, shape, matrix):
             "bryce_cut_shows_positive": props.legacy_get(obj, "bryce_cut_shows_positive")}
 
 
-def terrain_of(obj):
-    """: the terrain's heights from its picture's red channel (Blender's floats, bottom row first)."""
+def terrain_of(obj, notices=None):
+    """: the terrain's heights from its picture's red channel (Blender's floats, bottom row first); a resampled
+    picture's line goes to `notices`."""
     settings = getattr(obj, names.OBJECT_TERRAIN_GROUP)
     image = settings.image
     if image is None:
@@ -468,7 +469,7 @@ def terrain_of(obj):
     image.pixels.foreach_get(buffer)
     red = buffer[0::per_pixel]
     plain = {k: v for k, v in group_to_dict(settings).items() if k != "image"}
-    return solids.terrain(plain, width, height, red)
+    return solids.terrain(plain, width, height, red, notices)
 
 
 def evaluated_camera(depsgraph):
@@ -722,7 +723,9 @@ def describe(depsgraph, notices=None, view_camera=False):
                 entry["world"] = solids.own_transform(matrix, units)
             elif shape == "terrain":  # : the heights from the picture
                 try:
-                    entry["terrain"] = terrain_of(obj)
+                    told = []
+                    entry["terrain"] = terrain_of(obj, told)
+                    notices.extend("object %r: %s" % (obj.name, line) for line in told)
                     # : the own box of is 8 by 8 by 2 Blender units at scale 1
                     entry["world"] = create.terrain_world(matrix, entry["terrain"]["size"],
                                                           entry["terrain"]["mirrored"], units)

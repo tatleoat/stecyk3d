@@ -90,9 +90,16 @@ A mesh whose material has no Bryce Material node renders as a *new Bryce materia
   | Base Color | Diffuse colour | converted to the displayed (sRGB) colour |
   | Roughness | Specularity | 1 - roughness |
   | Metallic | Metallicity | as is |
-  | Alpha | Transparency | 1 - alpha |
+  | Alpha and Transmission Weight | Transparency | 1 - alpha x (1 - transmission x (1 - metallic)): the light that passes straight through (alpha) plus the light the glass lets through |
+  | Transmission Weight | Transparent colour | the base colour for glass, white for light that passes by alpha, mixed by their shares |
+  | IOR | Refraction | as is (Bryce's refraction value is the index of refraction; the Materials Lab shows it times 100), only where Transmission Weight lets light through and Thin Wall is off |
+  | Specular IOR Level | Reflection | 2 x level - 1, from 0 to 1: Blender's neutral 0.5 and below give no mirror, 1 a full mirror. Below 0.5 the highlight (Specularity) fades to none at 0 |
+  | Transmission and Specular IOR Level | Diffusion | 1 x (1 - transmission x (1 - metallic)) x (1 - reflection): Blender shares the light between its layers, Bryce adds them, so a glass or mirror keeps only Blender's diffuse share |
+  | Specular Tint | Specular colour | converted to the displayed colour |
   | Emission Color and Strength | Ambient colour and Ambience | colour as above; ambience = strength, at most 1 |
   | everything else | the new material's defaults | |
+
+  Every input left at Blender's own default gives the same material as before these inputs were read. A glass is Transmission Weight 1 with the IOR you want (water 1.33); a mirror is Specular IOR Level 1. Coat, Sheen, Subsurface, Anisotropic, Thin Film and Diffuse Roughness have no Bryce counterpart: when one is set the add-on says it was not carried.
 
   A linked input (a texture or any node) is not carried: its constant is used, and the add-on lists which inputs were linked.
   The panel then lists, in a box headed *From a Blender material: what is the same thing in both was copied*, what was copied (check marks) and, under *Left for you to set in Bryce's terms:*, what was not. **Dismiss this list** clears the box; the material is unchanged.
@@ -180,7 +187,7 @@ To have no clouds on a layer instead, untick its switch (*Stratus* or *Cumulus*)
 Shown for mesh and empty objects.
 
 - **Role** (in a group: *Role in its group*) of the object in a Bryce group, and **Cut shows positive** for a negative one; **Shape**, the Bryce shape the object stands for.
-- A mesh has the **Terrain from Mesh** button (also in the *Object* menu). For a terrain, its settings are in a box and **Show the terrain** rebuilds the viewport mesh from the terrain's picture (the picture must be square).
+- A mesh has the **Terrain from Mesh** button (also in the *Object* menu). For a terrain, its settings are in a box and **Show the terrain** rebuilds the viewport mesh from the terrain's picture (the picture must be square). With the grid set to *Auto*, a picture whose side is not 16, 32, 64, 128, 256, 512 or 1024 points is resampled when you render to the next of those sizes up (at most 1024), over the same area, so the terrain keeps its shape and size; the render report says so and from what size.
 - A **torus** has **Torus radii (tube, ring)**; *Add > Bryce shape > Torus* sets them (a torus made another way says *none set*).
 - A **metaball** has **Negative**. A metaball or tree under a Program other than 5.0 renders as its stand-in mesh, and the panel says so.
 - A **tree** has the *Tree Lab* boxes, with the tree's seed: **Trunk and branches**, **Shape (distance from the trunk, height)** and **Foliage (material slot 2: the leaves')**. The tree is 2 high, its foot 1 below the object's origin. A tree fresh from *Add > Bryce shape > Tree* has its Tree Lab numbers at 0 (the add-on does not know the settings Bryce 5 gives a new tree), which does not grow a tree: fill the settings in first. A render is refused, with a message naming the tree and the setting, when a tree grows a piece of wood with no thickness: always with a *Thickness* of 0, and often with a *Least* of 0 (the message calls them `trunk-thickness` and `least-thickness`). Such wood would turn the whole picture black.

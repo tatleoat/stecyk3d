@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # (a metaball's and a group's own transform; bryce_negative's sign; groups and their
-#       members' roles; bryce_terrain's heights from the picture's red channel, grid, faces; the terrain tool
+#       members' roles; bryce_terrain's heights from the picture's red channel, grid, faces (grid AUTO: a picture
+#       of another side resampled to the next grid size, with a notice); the terrain tool
 #       "from a mesh"; the thinned viewport stand-in)
 # (The revision of: Solids)
 """Metaballs, groups and terrains: plain values to the description's fields. Pure Python."""
@@ -104,6 +105,29 @@ def resize_grid(heights, old, new):
     for side in (old, new):
         if not GRID_MIN <= side <= GRID_MAX:
             raise ValueError("a terrain grid of %d points a side is outside 2 to 1024" % side)
+    return _bilinear(heights, old, new)
+
+
+def auto_size(side):
+    """The grid AUTO takes for a picture of `side` points a side: the side itself where it is one of AUTO_SIZES,
+    else the next one up, at most the largest (our choice: the program has no grid between them). A side below
+    GRID_MIN is refused."""
+    if side < GRID_MIN:
+        raise ValueError("the terrain's picture is %d point%s a side, fewer than %d"
+                         % (side, "" if side == 1 else "s", GRID_MIN))
+    return next((s for s in AUTO_SIZES if s >= side), AUTO_SIZES[-1])
+
+
+def resample(heights, old, new):
+    """A picture's heights, `old` points a side (any side from GRID_MIN up, the largest too), brought to the grid
+    size `new` as resize_grid does: bilinear over the same extent, the first and last points kept where they are,
+    so the terrain's shape and its box stay the same."""
+    if old < GRID_MIN or new not in AUTO_SIZES:
+        raise ValueError("a picture of %d points a side cannot be resampled to %d" % (old, new))
+    return _bilinear(heights, old, new)
+
+
+def _bilinear(heights, old, new):
     if old == new:
         return list(heights)
     places = []
@@ -125,8 +149,10 @@ def resize_grid(heights, old, new):
     return out
 
 
-def terrain(bryce_terrain, width, height, red):
-    """: the description's terrain from `bryce_terrain` and the picture's red channel (bottom row first)."""
+def terrain(bryce_terrain, width, height, red, notices=None):
+    """: the description's terrain from `bryce_terrain` and the picture's red channel (bottom row first).
+    With grid AUTO a picture whose side is not a grid size is resampled to auto_size's, and a line saying so is
+    added to `notices`."""
     if width != height:
         raise ValueError("the terrain's picture is %d by %d, not square" % (width, height))
     if len(red) != width * height:
@@ -134,14 +160,16 @@ def terrain(bryce_terrain, width, height, red):
     grid = str(bryce_terrain.get("grid", "AUTO"))
     if grid not in names.TERRAIN_GRID:
         raise ValueError("grid %r is not one of %s" % (grid, ", ".join(names.TERRAIN_GRID)))
+    levels = [height_of(v) for v in red]
     if grid == "AUTO":
-        if width not in AUTO_SIZES:
-            raise ValueError("the terrain's picture is %d points a side, not one of %s (grid AUTO)"
-                             % (width, ", ".join(str(s) for s in AUTO_SIZES)))
-        size = width
+        size = auto_size(width)
+        heights = resample(levels, width, size)
+        if size != width and notices is not None:
+            notices.append("the terrain's picture is %d points a side, not a grid size: resampled to %d "
+                           "(bilinear, same extent)" % (width, size))
     else:
         size = int(grid)
-    heights = resize_grid([height_of(v) for v in red], width, size)
+        heights = resize_grid(levels, width, size)
     return {
         "size": size,
         "heights": heights,
