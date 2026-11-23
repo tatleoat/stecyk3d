@@ -183,7 +183,7 @@ Shown for mesh and empty objects.
 - A mesh has the **Terrain from Mesh** button (also in the *Object* menu). For a terrain, its settings are in a box and **Show the terrain** rebuilds the viewport mesh from the terrain's picture (the picture must be square).
 - A **torus** has **Torus radii (tube, ring)**; *Add > Bryce shape > Torus* sets them (a torus made another way says *none set*).
 - A **metaball** has **Negative**. A metaball or tree under a Program other than 5.0 renders as its stand-in mesh, and the panel says so.
-- A **tree** has the *Tree Lab* boxes, with the tree's seed: **Trunk and branches**, **Shape (distance from the trunk, height)** and **Foliage (material slot 2: the leaves')**. The tree is 2 high, its foot 1 below the object's origin.
+- A **tree** has the *Tree Lab* boxes, with the tree's seed: **Trunk and branches**, **Shape (distance from the trunk, height)** and **Foliage (material slot 2: the leaves')**. The tree is 2 high, its foot 1 below the object's origin. A tree fresh from *Add > Bryce shape > Tree* has its Tree Lab numbers at 0 (the add-on does not know the settings Bryce 5 gives a new tree), which does not grow a tree: fill the settings in first. A render is refused, with a message naming the tree and the setting, when a tree grows a piece of wood with no thickness: always with a *Thickness* of 0, and often with a *Least* of 0 (the message calls them `trunk-thickness` and `least-thickness`). Such wood would turn the whole picture black.
 - **Show the shape** replaces the object's mesh with one that shows its Bryce shape. Press it after changing the shape or a torus's radii.
 
 ## The preferences page
