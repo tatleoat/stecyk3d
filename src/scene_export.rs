@@ -361,9 +361,11 @@ pub fn texture_json(t: &Texture) -> J {
                     ("color_space", J::word(space_word(s.colours.space))),
                     // : the result as saved (colour word, then the four doubles), which a
                     // texture no evaluation has written holds; the add-on keeps it with the texture node.
+                    // The saved gradient is often not a number (most of Bryce 5.0's texture presets
+                    // whose result is a bump): written as NaN or Infinity, not null, so it survives.
                     ("saved", J::obj(vec![
                         ("colour", J::word(p.saved_result.colour)),
-                        ("numbers", J::nums(&p.saved_result.numbers)),
+                        ("numbers", J::nums_x(&p.saved_result.numbers)),
                     ])),
                     ("colors", colours_json(&s.colours)),
                     ("filter", filter_json(&s.filter)),

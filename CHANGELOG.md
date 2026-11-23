@@ -11,6 +11,7 @@ Newest first.
 - The Material tab's Texture components panel and the per-channel mix rows no longer stop with an error when a texture or mix comes through a node group.
 - A tree whose Tree Lab settings grow a piece of wood with no thickness (a *Thickness* of 0, as a tree fresh from *Add > Bryce shape > Tree* has, or often a *Least* of 0) is refused with a message naming the tree and the setting. It turned the whole picture black.
 - Render Animation now draws the sky of each frame: keyframed or driven sky settings (haze, the sky's sun direction, and the rest) used to keep the values of the frame the render started at. Exact png writes one file per frame of an animation instead of overwriting one, and is saved where Blender saves its own output (a relative path on Windows with no drive and no `//` goes on the drive's root, as Blender's `Saved:` line shows; the Render tab now says where).
+- Every preset of the material and texture libraries the add-on reads now applies. Material presets with a mixed channel (Distant Mountain, Whole Mountain, Riverbed, Wet Rock, Desert I, Walnut and others) and Tutorial Light Gel stopped with "float() argument must be ... not 'NoneType'"; texture presets whose saved result is not a number (most bump textures, such as techno city 2) stopped when added. Ion Damage is still refused (its texture has no component).
 
 ### Name
 
